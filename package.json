@@ -1,7 +1,7 @@
 {
-  "name": "vite-vue3-electron-ts-template",
+  "name": "criminalquiz",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "author": "Your Name",
   "main": "dist/electron/main/main.js",
   "scripts": {
@@ -12,7 +12,7 @@
     "watch": "tsc -w",
     "lint": "eslint -c .eslintrc --ext .ts ./src",
     "app:dev": "tsc && concurrently vite \" electron .\" \"tsc -w\"",
-    "app:build": "npm run vite:build && tsc && electron-builder",
+    "app:build": "npm run vite:build && tsc && electron-builder -wl",
     "app:preview": "npm run vite:build && tsc && electron ."
   },
   "build": {
@@ -50,7 +50,9 @@
     }
   },
   "dependencies": {
-    "vue": "^3.2.25"
+    "vue": "^3.2.25",
+    "vuestic-ui": "^1.5.1",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.19.1/xlsx-0.19.1.tgz"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^2.3.3",

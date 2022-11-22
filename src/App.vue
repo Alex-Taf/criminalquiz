@@ -1,19 +1,7 @@
-<script setup lang="ts">
-// This starter template is using Vue 3 <script setup> SFCs
-// Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
-import HelloWorld from "./components/HelloWorld.vue";
-</script>
+<script setup lang="ts"></script>
 
 <template>
-  <img alt="Vite logo" width="120" src="./assets/vite.svg" />
-  <img alt="Vue logo" width="120" src="./assets/logo.png" />
-  <img alt="Electron logo" width="120" src="./assets/electron.png" />
-  <img alt="TS logo" width="120" src="./assets/ts.png" />
-  <HelloWorld msg="Vite + Vue 3 + Electron + TypeScript" />
-  <br />
-  <p class="plugins">Plugins</p>
-  <img alt="vue router logo" width="120" src="./assets/vueRouter.png" />
-  <img alt="pinia logo" width="120" src="./assets/pinia.svg" />
+  <router-view></router-view>
 </template>
 
 <style>
@@ -24,10 +12,19 @@ import HelloWorld from "./components/HelloWorld.vue";
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  height: 100%;
+  width: 100%;
 }
+
 img {
   margin: 5px;
 }
+
 .plugins {
   font-size: 20px;
   font-weight: bold;

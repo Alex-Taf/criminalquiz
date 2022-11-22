@@ -1,22 +1,29 @@
-import { createWebHistory, createRouter } from "vue-router";
-import Home from "../components/Home.vue";
-import About from "../components/About.vue";
+import { createWebHashHistory, createRouter } from "vue-router";
+
+import Main from "../views/Main.vue";
+import ChooseSheet from "../views/ChooseSheet.vue";
+import Quiz from "../views/Quiz.vue";
 
 const routes = [
     {
-        path: "/home",
-        name: "Home",
-        component: Home,
+        path: "/",
+        name: "Main",
+        component: Main,
     },
     {
-        path: "/about",
-        name: "About",
-        component: About,
+        path: "/choose",
+        name: "ChooseSheet",
+        component: ChooseSheet,
     },
+    {
+        path: "/quiz",
+        name: "Quiz",
+        component: Quiz
+    }
 ];
 
 const router = createRouter({
-    history: createWebHistory(),
+    history: createWebHashHistory(),
     routes,
 });
 
