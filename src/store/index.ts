@@ -38,6 +38,7 @@ export const useStore = defineStore({
                     'Вопросы': 'question',
                     'Вопрос': 'question',
                     'Варианты ответов': 'var1',
+                    'Ответы': 'var1',
                     '__EMPTY': 'var2',
                     '__EMPTY_1': 'var3',
                     '__EMPTY_2': 'var4',
@@ -78,8 +79,6 @@ export const useStore = defineStore({
                 })
                 
                 this.workbookSheetsTotal = sheets.length
-                
-                console.log(this.workbook)
             }
         },
         chooseSheet(num: number) {

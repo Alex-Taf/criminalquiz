@@ -1,7 +1,11 @@
 <script setup lang="ts"></script>
 
 <template>
-  <router-view></router-view>
+  <router-view v-slot="{ Component }">
+    <transition name="slide" mode="out-in">
+      <component :is="Component" />
+    </transition>
+  </router-view>
 </template>
 
 <style>
@@ -19,6 +23,7 @@
   min-height: 100vh;
   height: 100%;
   width: 100%;
+  overflow-x: hidden;
 }
 
 img {
@@ -29,5 +34,34 @@ img {
   font-size: 20px;
   font-weight: bold;
   margin-top: 20px;
+}
+
+.slide-enter-active,
+.slide-leave-active {
+  transition: all 0.5s ease-in-out;
+}
+
+.slide-enter-from {
+  position: absolute;
+  opacity: 0;
+  right: -100%;
+}
+
+.slide-enter-to {
+  position: absolute;
+  opacity: 0.3;
+  right: 0;
+}
+
+.slide-leave-from {
+  position: absolute;
+  opacity: 0.6;
+  left: 0;
+}
+
+.slide-leave-to {
+  position: absolute;
+  opacity: 1;
+  left: -100%;
 }
 </style>
