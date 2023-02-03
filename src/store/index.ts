@@ -4,6 +4,7 @@ import { read, utils } from 'xlsx';
 export const useStore = defineStore({
     id: 'main',
     state: () => ({
+        appMode: '',
         data: {},
         parsedData: {},
         workbook: [] as any,
@@ -12,6 +13,7 @@ export const useStore = defineStore({
         activeQuestion: {} as any
     }),
     getters: {
+        mode: (state) => state.appMode,
         wb: (state) => state.workbook,
         sheetsTotal: (state) => state.workbookSheetsTotal,
         sheetActive: (state) => state.activeSheet
@@ -67,7 +69,8 @@ export const useStore = defineStore({
                           });
 
                         const newObject = Object.assign({}, ...keyValues);
-                        const variants = Object.fromEntries(Object.entries(newObject).filter(([key]) => key.includes('var')));
+                        const variants = Object.fromEntries(Object.entries(newObject).filter(([key, value]) => key.includes('var') && !isNaN(value)));
+                    
 
                         Object.defineProperty(newObject, 'variants', {
                             value: Object.values(variants),
@@ -83,6 +86,9 @@ export const useStore = defineStore({
         },
         chooseSheet(num: number) {
             this.activeSheet = this.workbook[num]
+        },
+        chooseMode(mode: string) {
+            this.appMode = mode
         }
     }
 })

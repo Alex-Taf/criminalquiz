@@ -3,6 +3,9 @@
     import { useRouter } from 'vue-router'
     import { useStore } from '../store/index'
 
+    import { MODES } from '../config/index'
+
+    const selectedMode = ref('')
     const file = ref([])
     const store = useStore()
     const router = useRouter()
@@ -11,10 +14,21 @@
         store.handleFileAsync(e)
         router.push({ path: '/choose' })
     }
+
+    const setMode = (mode: string) => {
+        selectedMode.value = mode
+        store.chooseMode(selectedMode.value)
+    } 
 </script>
 
 <template>
+    <h2 v-if="selectedMode === ''">Выберите режим:</h2>
+    <section v-if="selectedMode === ''" class="main-section">
+        <va-button class="main-btn" @click="setMode(MODES.quiz)">Тест</va-button>
+        <va-button class="main-btn" @click="setMode(MODES.trainer)">Тренажёр</va-button>
+    </section>
     <va-file-upload
+        v-if="selectedMode !== ''"
         id="load-file"
         v-model="file"
         file-types="xls,xlsx"
@@ -24,3 +38,19 @@
         @file-added="upload"
     />
 </template>
+
+<style scoped>
+    h2 {
+        margin-bottom: 5px;
+        font-size: 36px;
+    }
+
+    .main-section {
+        display: flex;
+        gap: 2px;
+    }
+
+    .main-btn {
+        font-size: 32px;
+    }
+</style>

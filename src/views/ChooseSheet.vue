@@ -1,16 +1,19 @@
 <script setup lang="ts">
     import { storeToRefs } from 'pinia'
+import { onMounted } from 'vue';
     import { useRouter } from 'vue-router'
     import { useStore } from '../store/index'
 
     const store = useStore()
     const router = useRouter()
 
-    const { sheetsTotal } = storeToRefs(store)
+    const { sheetsTotal, mode } = storeToRefs(store)
 
     function selectSheet(num: number) {
         store.chooseSheet(num)
-        router.push({ path: '/quiz' })
+        
+        if (mode.value === 'quiz') router.push({ path: '/quiz' })
+        if (mode.value === 'trainer') router.push({ path: '/trainer' })
     }
 </script>
 

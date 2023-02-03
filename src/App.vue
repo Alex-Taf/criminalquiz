@@ -1,11 +1,7 @@
 <script setup lang="ts"></script>
 
 <template>
-  <router-view v-slot="{ Component }">
-    <transition name="slide" mode="out-in">
-      <component :is="Component" />
-    </transition>
-  </router-view>
+  <router-view />
 </template>
 
 <style>
@@ -15,7 +11,6 @@
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -63,5 +58,11 @@ img {
   position: absolute;
   opacity: 1;
   left: -100%;
+}
+
+.va-checkbox__label {
+  width: 500px;
+  margin-bottom: 10px;
+  cursor: pointer;
 }
 </style>
