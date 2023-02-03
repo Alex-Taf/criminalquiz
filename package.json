@@ -1,8 +1,8 @@
 {
   "name": "criminalquiz",
   "private": true,
-  "version": "1.0.0",
-  "author": "Your Name",
+  "version": "1.2.0",
+  "author": "Alexander Tafintsev",
   "main": "dist/electron/main/main.js",
   "scripts": {
     "vite:dev": "vite",
