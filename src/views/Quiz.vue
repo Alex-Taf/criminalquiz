@@ -2,11 +2,14 @@
     import { ref, reactive, onMounted } from 'vue'
     import { storeToRefs } from 'pinia'
     import { useStore } from '../store/index'
-    import { Objectify } from '../utils/index'
+    import { useRouter } from "vue-router"
+    import { Objectify, saveReportAs } from '../utils/index'
+    import { userAPI } from '../http/user.api'
 
     const store = useStore()
+    const router = useRouter()
 
-    const { sheetActive } = storeToRefs(store)
+    const { sheetActive, currentTest } = storeToRefs(store)
 
     const count = ref(0)
     const activeNum = ref(1)
@@ -29,19 +32,10 @@
         })
     }
 
-    const getCurrentQuestion = () => {
-        currentQuestion.value = questions.value.find((question) => question.num === activeNum.value)
-    }
-
-    const getQuestionVariants = () => {
-        return questions.value.find((value: any) => value.num === activeNum.value).variants.map(value => value)
-    }
-
     const getCorrectVariants = () => {
         const answers = sheetActive.value.filter((question) => {
             return question.variants.length === 1
         })
-
         const correctAnswers = answers.map((answer) => {
             return {
                 num: answer.num,
@@ -60,9 +54,16 @@
             const q = sheetActive.value.find((question) => question.num === value)
             ans.push(q)
         })
-
         currentQuestionAnswers.value = ans
-        correctQuestionAnswers.value = ans.filter((value) => value.variants[0] === 1).map((value) => value.num)
+        correctQuestionAnswers.value = ans.filter((value: any) => value.variants[0] === 1).map((value) => value.num)
+    }
+
+    const getCurrentQuestion = () => {
+        currentQuestion.value = questions.value.find((question) => question.num === activeNum.value)
+    }
+
+    const getQuestionVariants = () => {
+        return questions.value.find((value: any) => value.num === activeNum.value).variants.map(value => value)
     }
 
     const getQuestionsCount = () => {
@@ -75,16 +76,16 @@
                 score.value++
             }
         });
-
         selection.value = []
+        
         count.value++
         activeNum.value = questions.value[count.value].num
-
         quizDonePercent.value = `${+(count.value / questionsCount.value).toFixed(2) * 100}%`
-
+        
         getCurrentQuestion()
         getQuestionAnswers(getQuestionVariants())
     }
+
 
     const isDisabled = (currentSelection: any) => {
         return selection.value.length === correctQuestionAnswers.value.length && !selection.value.includes(currentSelection)
@@ -97,11 +98,19 @@
         return qObject?.num === activeNum.value
     }
 
+    console.log(+userAPI.storageUserData.id)
+
     const doneQuiz = () => {
         isQuizDone.value = true
 
         result.value = +(score.value / correctVariantsCount.value).toFixed(0) * 100
         report.value = `Результат за пройденный тест: ${result.value}%. Оценка: ${calculateEstimation()?.estimation}`
+        
+        store.doneQuiz({
+            userId: +userAPI.storageUserData.id,
+            testId: +currentTest.value.id,
+            resultEstimation: calculateEstimation()?.estimation
+        })
     }
 
     const calculateEstimation = () => {
@@ -109,31 +118,6 @@
         if (result.value >= 30 && result.value < 70) return { estimation: 3, color: 'orange' }
         if (result.value >= 70 && result.value < 95) return { estimation: 4, color: 'yellow' }
         if (result.value >= 95) return { estimation: 5, color: 'green' }
-    }
-
-    function saveFileAs() {
-        // It works on all HTML5 Ready browsers as it uses the download attribute of the <a> element:
-        const element = document.createElement('a');
-        
-        //A blob is a data type that can store binary data
-        // "type" is a MIME type
-        // It can have a different value, based on a file you want to save
-        const blob = new Blob([report.value], { type: 'plain/text' });
-
-        //createObjectURL() static method creates a DOMString containing a URL representing the object given in the parameter.
-        const fileUrl = URL.createObjectURL(blob);
-        
-        //setAttribute() Sets the value of an attribute on the specified element.
-        element.setAttribute('href', fileUrl); //file location
-        element.setAttribute('download', 'report.txt'); // file name
-        element.style.display = 'none';
-        
-        //use appendChild() method to move an element from one element to another
-        document.body.appendChild(element);
-        element.click();
-        
-        //The removeChild() method of the Node interface removes a child node from the DOM and returns the removed node
-        document.body.removeChild(element);
     }
 
     // Init
@@ -151,21 +135,21 @@
     <section class="quiz col">
         <h1 v-if="!isQuizDone">{{ currentQuestion.value?.question }}</h1>
         <div class="answers" v-if="!isQuizDone">
-            <template v-for="answer in currentQuestionAnswers" :key="variant">
-                <va-checkbox 
+            <template v-for="answer in currentQuestionAnswers" :key="answer.num">
+                <v-checkbox
                     v-model="selection"
-                    :array-value="answer.num"
                     :label="answer.question"
+                    :value="answer.num"
                     :disabled="isDisabled(answer.num)"
                     class="answer-check"
-                />
+                ></v-checkbox>
             </template>
-            <va-button v-if="!isFinalQuestion()" class="btn" @click="handleAnswer">
+            <v-btn v-if="!isFinalQuestion()" class="btn" @click="handleAnswer()">
                 Далее
-            </va-button>
-            <va-button v-else @click="doneQuiz">
+            </v-btn>
+            <v-btn v-else @click="doneQuiz">
                 Завершить
-            </va-button>
+            </v-btn>
         </div>
         <template v-if="isQuizDone">
             <section class="report-area">
@@ -175,13 +159,13 @@
                 <span class="report-area-estim" :style="{ color: calculateEstimation()?.color }">
                     {{ calculateEstimation()?.estimation }}
                 </span>
-                <va-input
+                <v-textarea
                     class="mb-4"
                     v-model="report"
-                    type="textarea"
-                    placeholder="Впишите данные в отчёт"
-                />
-                <va-button @click="saveFileAs">Сохранить отчёт</va-button>
+                    label="Впишите данные в отчёт"
+                ></v-textarea>
+                <v-btn @click="saveReportAs(report)">Сохранить отчёт</v-btn>
+                <v-btn @click="router.push({ path: '/' })">Завершить</v-btn>
             </section>
         </template>
     </section>

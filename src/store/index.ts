@@ -1,28 +1,43 @@
 import { defineStore } from 'pinia';
+import router from "../router";
 import { read, utils } from 'xlsx';
+import { IUserData } from "../interfaces"
+import { getFilename } from "../utils"
+import { useDatabase } from "../db"
+
+const $db = useDatabase()
 
 export const useStore = defineStore({
     id: 'main',
     state: () => ({
         appMode: '',
+        user: {} as IUserData,
         data: {},
         parsedData: {},
-        workbook: [] as any,
-        workbookSheetsTotal: 0 as number,
+        dataset: [] as any,
+        allTests: [] as any,
+        sheetsTotal: 0 as number,
+        allTestsNames: [] as any,
+        currentTest: {} as any,
         activeSheet: [] as any,
-        activeQuestion: {} as any
+        activeQuestion: {} as any,
+        userEstimationsData: [] as any
     }),
     getters: {
         mode: (state) => state.appMode,
-        wb: (state) => state.workbook,
-        sheetsTotal: (state) => state.workbookSheetsTotal,
-        sheetActive: (state) => state.activeSheet
+        wb: (state) => state.dataset,
+        sheetsTotalCount: (state) => state.sheetsTotal,
+        sheetActive: (state) => state.activeSheet,
+        testsNames: (state) => state.allTestsNames,
+        test: (state) => state.currentTest,
+        userData: (state) => state.user,
+        userEstimations: (state) => state.userEstimationsData
     },
     actions: {
-        async handleFileAsync(e: Event) {
-            if (e && e[0]) {
+        async loadTestsFromFile(e: Event, options?: { loadInDb?: boolean }) {
+            if (e) {
                 /* Reading a file from event handler */
-                this.data = await e[0].arrayBuffer();
+                this.data = await e?.target?.files[0].arrayBuffer();
                     
                 /* data is an ArrayBuffer */
                 this.parsedData = read(this.data);
@@ -61,7 +76,7 @@ export const useStore = defineStore({
                     '__EMPTY_17': 'var19',
                 }
 
-                this.workbook = sheets.map((sheet) => {
+                const ds = sheets.map((sheet) => {
                     return sheet.map((question) => {
                         const keyValues = Object.keys(question).map(key => {
                             const newKey = replacements[key] || key;
@@ -69,26 +84,90 @@ export const useStore = defineStore({
                           });
 
                         const newObject = Object.assign({}, ...keyValues);
-                        const variants = Object.fromEntries(Object.entries(newObject).filter(([key, value]) => key.includes('var') && !isNaN(value)));
-                    
-
-                        Object.defineProperty(newObject, 'variants', {
-                            value: Object.values(variants),
-                            writable: true
-                        })
 
                         return newObject;
                     })
                 })
-                
-                this.workbookSheetsTotal = sheets.length
+
+                const st = sheets.length
+
+                if (options && options.loadInDb) {
+                    $db.insert('tests', {
+                        testname: getFilename(e?.target?.files[0].name),
+                        dataset: JSON.stringify(ds),
+                        type: this.appMode,
+                        sheets_total: st 
+                    }).finally(() => {
+                        router.push({ path: '/choosedb' })
+                    })
+                } else {
+                    this.dataset = ds
+                    this.sheetsTotal = st
+                }
             }
         },
         chooseSheet(num: number) {
-            this.activeSheet = this.workbook[num]
+            const currentDataset = this.dataset[num]
+            const newCurr = currentDataset.map((q) => {
+                const variants = Object.fromEntries(
+                    Object.entries(q)
+                    .filter(
+                        ([key, value]) => key.includes('var') && !isNaN(value as number)));
+                    
+                Object.defineProperty(q, 'variants', {
+                    value: Object.values(variants),
+                    writable: true
+                })
+
+                return q
+            })
+
+            this.activeSheet = newCurr
         },
         chooseMode(mode: string) {
             this.appMode = mode
+        },
+        chooseTest(testNum: number) {
+            this.currentTest = this.allTests[testNum]
+            this.sheetsTotal = this.currentTest.sheets_total
+            this.dataset = JSON.parse(this.currentTest.dataset)
+            router.push({ path: '/choose' })
+        },
+        loadTests() {
+            $db
+            .selectWhere('*', 'tests', `type = "${this.appMode}"`)
+            .then(result => {
+                console.log(result)
+                this.allTests = result
+                this.allTestsNames = this.allTests.map((row) => {
+                    return row.testname
+                })
+                router.push({ path: '/choosedb' })
+            })
+        },
+        doneQuiz(
+            data: {
+                userId: number,
+                testId: number,
+                resultEstimation: number
+            }) {
+                
+                $db
+                .selectWhere('id', 'estimations', `estimation = "${data.resultEstimation}"`)
+                .then(result => {
+                    $db.insert('users_estimations', {
+                        user_id: data.userId,
+                        test_id: data.testId,
+                        estimation_id: result[0].id
+                    })
+                })
+            },
+        loadUserEstimations(userId: number) {
+            // $db
+            // .selectWhere('*', 'users_estimations', ``)
+            // .then(row => {
+            //     $db.
+            // })
         }
     }
 })

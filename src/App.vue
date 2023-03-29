@@ -1,7 +1,11 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+</script>
 
 <template>
-  <router-view />
+  <div class="container">
+    <notifications position="top center" />
+    <router-view />
+  </div>
 </template>
 
 <style>
@@ -19,6 +23,21 @@
   height: 100%;
   width: 100%;
   overflow-x: hidden;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.vue-notification {
+  position: fixed;
+  min-width: 300px;
+  font-size: 16px !important;
+  top: 140px;
 }
 
 img {

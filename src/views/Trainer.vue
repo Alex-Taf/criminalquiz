@@ -2,6 +2,10 @@
     import { ref } from 'vue'
     import { storeToRefs } from 'pinia'
     import { useStore } from '../store/index'
+    import { saveReportAs } from "../utils"
+    import { useRouter } from "vue-router"
+
+    const router = useRouter()
 
     const store = useStore()
 
@@ -9,9 +13,11 @@
 
     const activeNum = ref(1)
     const report = ref('')
+    const isDone = ref(false)
 
     const changeActiveQuestion = (num: number) => {
-        activeNum.value = num
+        if (num === -1) isDone.value = true
+        if (num !== -1) activeNum.value = num
     }
 
     const findQuestionLabel = () => {
@@ -19,62 +25,40 @@
     }
 
     const getActiveVariants = () => {
+        const variants = sheetActive.value.find(question => question.num === activeNum.value).variants
+        
+        if (variants[0] === -1) {
+            isDone.value = true
+            return
+        }
+
         return sheetActive.value.find(question => question.num === activeNum.value).variants
-    }
-
-    const isFinalQuestion = () => {
-        return activeNum !== sheetActive.value.find(question => question.variants[0] === -1 || question.variants.length === 0).num
-    }
-
-    function saveFileAs() {
-        // It works on all HTML5 Ready browsers as it uses the download attribute of the <a> element:
-        const element = document.createElement('a');
-        
-        //A blob is a data type that can store binary data
-        // "type" is a MIME type
-        // It can have a different value, based on a file you want to save
-        const blob = new Blob([report.value], { type: 'plain/text' });
-
-        //createObjectURL() static method creates a DOMString containing a URL representing the object given in the parameter.
-        const fileUrl = URL.createObjectURL(blob);
-        
-        //setAttribute() Sets the value of an attribute on the specified element.
-        element.setAttribute('href', fileUrl); //file location
-        element.setAttribute('download', 'report.txt'); // file name
-        element.style.display = 'none';
-        
-        //use appendChild() method to move an element from one element to another
-        document.body.appendChild(element);
-        element.click();
-        
-        //The removeChild() method of the Node interface removes a child node from the DOM and returns the removed node
-        document.body.removeChild(element);
     }
 </script>
 
 <template>
     <section class="trainer col">
-        <h1>{{ findQuestionLabel() }}</h1>
-        <template v-if="isFinalQuestion()">
+        <h1 v-if="!isDone">{{ findQuestionLabel() }}</h1>
+        <template v-if="!isDone">
             <div class="answers">
                 <section>
                     <template v-for="variant in getActiveVariants()" :key="variant">
-                        <va-button class="btn" @click="changeActiveQuestion(variant)">
+                        <v-btn v-if="!isDone" class="btn" @click="changeActiveQuestion(variant)">
                             {{ sheetActive.find(question => question.num === variant).question }}
-                        </va-button>
+                        </v-btn>
                     </template>
                 </section>
             </div>
         </template>
-        <template v-else>
+        <template v-if="isDone">
             <section class="report-area">
-                <va-input
+                <v-textarea
                     class="mb-4"
                     v-model="report"
-                    type="textarea"
-                    placeholder="Впишите данные в отчёт"
-                />
-                <va-button @click="saveFileAs">Сохранить отчёт</va-button>
+                    label="Впишите данные в отчёт"
+                ></v-textarea>
+                <v-btn @click="saveReportAs(report)">Сохранить отчёт</v-btn>
+                <v-btn @click="router.push({ path: '/' })">Завершить</v-btn>
             </section>
         </template>
     </section>
