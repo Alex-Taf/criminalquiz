@@ -2280,6 +2280,11 @@ keyv@^4.0.0:
   dependencies:
     json-buffer "3.0.1"
 
+knex-paginate@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/knex-paginate/-/knex-paginate-3.1.0.tgz#ef802d9f999fc60df798245150cac3bbf4e502f5"
+  integrity sha512-3FTimPOWGfdJWgLHzRhrU32qUdtRsp7ZObO26ZTXppNJNtV/kSI3ReHaOUBHBNTH5ftiBWew8WxPwjDVB36x+g==
+
 knex@^2.4.2:
   version "2.4.2"
   resolved "https://registry.yarnpkg.com/knex/-/knex-2.4.2.tgz#a34a289d38406dc19a0447a78eeaf2d16ebedd61"
@@ -3648,7 +3653,14 @@ vue-tsc@^0.34.7:
   dependencies:
     "@volar/vue-typescript" "0.34.17"
 
-vue@^3.2.25:
+vue3-easy-data-table@^1.5.42:
+  version "1.5.42"
+  resolved "https://registry.yarnpkg.com/vue3-easy-data-table/-/vue3-easy-data-table-1.5.42.tgz#33f720213fdbcdd93afdd70ff19379b08e01be84"
+  integrity sha512-dJfu1c05qidHB5/OxRoc2WtR4Qr4St8/SLUV3dagFZlF+b5Jzi2WdqEYAW4TX1nl/kxI7CrIvGLCpGfxcZYEDQ==
+  dependencies:
+    vue "^3.2.45"
+
+vue@^3.2.25, vue@^3.2.45:
   version "3.2.47"
   resolved "https://registry.yarnpkg.com/vue/-/vue-3.2.47.tgz#3eb736cbc606fc87038dbba6a154707c8a34cff0"
   integrity sha512-60188y/9Dc9WVrAZeUVSDxRQOZ+z+y5nO2ts9jWXSTkMvayiWxCWOWtBQoYjLeccfXkiiPZWAHcV+WTPhkqJHQ==

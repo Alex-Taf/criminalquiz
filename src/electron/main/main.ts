@@ -1,5 +1,5 @@
 import { join } from "path";
-import { app, BrowserWindow, ipcMain, session } from "electron";
+import { app, BrowserWindow, ipcMain } from "electron";
 
 const isDev = process.env.npm_lifecycle_event === "app:dev" ? true : false;
 
@@ -19,7 +19,7 @@ function createWindow() {
     mainWindow.loadURL("http://localhost:3000"); // Open the DevTools.
     mainWindow.webContents.openDevTools();
   } else {
-    mainWindow.loadFile(join(__dirname, "../../../../index.html"));
+    mainWindow.loadFile(join(__dirname, "../../../index.html"));
   }
   // mainWindow.loadURL( //this doesn't work on macOS in build and preview mode
   //     isDev ?

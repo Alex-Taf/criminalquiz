@@ -1,6 +1,6 @@
 import { toRaw } from 'vue'
 import { OBJECTIFY_MODES } from '../config/index'
-import { IGetInitials } from './index.interface'
+import { IGetInitials, ICalculatePages, IGetEstimationColor } from './index.interface'
 
 export const Objectify = (target: any, type: string) => {
     if (type === OBJECTIFY_MODES.JSON) return JSON.parse(JSON.stringify(target))
@@ -11,7 +11,7 @@ export const getInitials: IGetInitials = (words, options = { uppercase: false, d
     const splitted = words.split(' ')
     
     function getLetters(arr: Array<string>) {
-        let letters = []
+        let letters = [] as Array<string>
         
         for (let i = 0; i < arr.length; i++) {
             letters.push(arr[i][0])
@@ -35,6 +35,29 @@ export const getInitials: IGetInitials = (words, options = { uppercase: false, d
     if (!options.uppercase && !options.dotted) {
         return splitted.length === 1 ? splitted[0][0] : getLetters(splitted).join('')
     }
+}
+
+export const getEstimationColor: IGetEstimationColor = (estimation) => {
+    switch (estimation) {
+        case 2:
+            return 'red'
+            break;
+        case 3:
+            return 'orange'
+            break;
+        case 4:
+            return 'yellow'
+            break;
+        case 5:
+            return 'green'
+            break;
+        default:
+            break;
+    }
+}
+
+export const calculatePages: ICalculatePages = (total, perPage) => {
+    return total / perPage
 }
 
 export const saveReportAs = (report: string) => {

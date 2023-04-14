@@ -14,6 +14,9 @@ import { aliases, mdi } from 'vuetify/iconsets/mdi'
 
 import Notifications from '@kyvg/vue3-notification'
 
+import Vue3EasyDataTable from 'vue3-easy-data-table';
+import 'vue3-easy-data-table/dist/style.css';
+
 const vuetify = createVuetify({
   components,
   directives,
@@ -32,4 +35,5 @@ app.use(createPinia()) //use pinia
 app.use(router) //use router
 app.use(vuetify)
 app.use(Notifications)
+app.component('EasyDataTable', Vue3EasyDataTable)
 app.mount('#app')

@@ -51,8 +51,17 @@
               <v-btn
                 rounded
                 variant="text"
+                @click="router.push({ path: '/history' })"
               >
                 История оценок
+              </v-btn>
+              <v-divider class="my-3"></v-divider>
+              <v-btn
+                rounded
+                variant="text"
+                @click="router.push({ path: '/testspanel' })"
+              >
+                Список загруженных <br>тестов/тренажёров
               </v-btn>
               <v-divider class="my-3"></v-divider>
               <v-btn

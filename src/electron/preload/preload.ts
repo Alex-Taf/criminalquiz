@@ -1,6 +1,8 @@
-import { contextBridge, ipcRenderer } from "electron"
+import { contextBridge } from "electron"
 import dotenv from 'dotenv'
 import knex from "knex";
+import { attachPaginate } from "knex-paginate"
+attachPaginate()
 
 /** */
 /* Authorization server  */
@@ -65,7 +67,7 @@ window.addEventListener("DOMContentLoaded", () => {
 })
 
 /** */
-/* Sqlite Database ORM declaration  */
+/* Sqlite Database QueryBuilder declaration  */
 /** */
 const db = knex({
   client: 'sqlite3',
@@ -84,13 +86,108 @@ app.listen(4000, () => {
 /** */
 /* Context API for use system actions from application  */
 /** */
-// contextBridge.exposeInMainWorld('server', {
-//   getPort: async () => await ipcRenderer.invoke('potd', 'sdgdas')
-// })
-
 contextBridge.exposeInMainWorld('db', {
-  select: (entity: string, table: string) => db.select(entity).from(table).then(rows => rows),
+  select: (
+    entity: string,
+    table: string,
+    so?: { page: number, rowsPerPage: number },
+    like?: {
+      field: string,
+      value: string
+    } 
+    ) => {
+      if (so && !like) {
+        return db.select(entity).from(table).paginate({ perPage: so.rowsPerPage, currentPage: so.page }).then(rows => rows)
+      } 
+      
+      if (so && like) {
+        return db.select(entity).from(table).whereLike(like.field, `%${like.value}%`).paginate({ perPage: so.rowsPerPage, currentPage: so.page }).then(rows => rows)
+      } 
+      
+      if (!so && like) {
+        return db.select(entity).from(table).whereLike(like.field, `%${like.value}%`).then(rows => rows)
+      }
+
+      if (!so && !like) {
+        return db.select(entity).from(table).then(rows => rows)
+      }
+    },
   selectWhere: (entity: string, table: string, where: string) => db(table).whereRaw(where).select(entity).then(rows => rows),
   insert: (table: string, options: Record<string | number, string | number>) => db(table).insert(options).then(),
-  join: (tables: { table1: string, table2: string }, options: { table1_id: number, table2_id: number }) => db(tables.table1).join(`${tables.table2}`, `${options.table1_id}`, '=', `${options.table2_id}`)
-})
+  join: (
+    table: string,
+    options: {
+      joinedTable: string,
+      entities: Array<string>,
+      operator: string
+    },
+    selection: Array<string>,
+  ) => {
+    return db(table)
+            .join(options.joinedTable, options.entities[0], options.operator, options.entities[1])
+            .select(...selection).then(rows => rows)
+  },
+  intermediateJoin: (
+    selectValues: [],
+    table1: string,
+    interTable: {
+      name: string,
+      values: string[],
+      operator: string
+    },
+    table3: {
+      name: string,
+      values: string[],
+      operator: string
+    },
+    so?: { page: number, rowsPerPage: number },
+    like?: {
+      field: string,
+      value: string
+    }
+  ) => {
+    if (so && !like) {
+      return db
+            .select(...selectValues)
+            .from(table1)
+            .join(interTable.name, interTable.values[0], interTable.operator, interTable.values[1])
+            .join(table3.name, table3.values[0], table3.operator, table3.values[1])
+            .paginate({ perPage: so.rowsPerPage, currentPage: so.page })
+            .then(rows => rows)
+    }
+
+    if (so && like) {
+      return db
+            .select(...selectValues)
+            .from(table1)
+            .whereLike(like.field, `%${like.value}%`)
+            .join(interTable.name, interTable.values[0], interTable.operator, interTable.values[1])
+            .join(table3.name, table3.values[0], table3.operator, table3.values[1])
+            .paginate({ perPage: so.rowsPerPage, currentPage: so.page })
+            .then(rows => rows)
+    }
+
+    if (!so && like) {
+      return db
+            .select(...selectValues)
+            .from(table1)
+            .whereLike(like.field, `%${like.value}%`)
+            .join(interTable.name, interTable.values[0], interTable.operator, interTable.values[1])
+            .join(table3.name, table3.values[0], table3.operator, table3.values[1])
+            .then(rows => rows)
+    }
+
+    if (!so && !like) {
+      return db
+            .select(...selectValues)
+            .from(table1)
+            .join(interTable.name, interTable.values[0], interTable.operator, interTable.values[1])
+            .join(table3.name, table3.values[0], table3.operator, table3.values[1])
+            .then(rows => rows)
+    }
+  },
+  delete: (table: string, id: number) => {
+    return db(table).where('id', id).del().then(rows => rows)
+  }
+}
+)

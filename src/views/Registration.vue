@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import { reactive, ref } from "vue";
 import { userAPI } from "../http/user.api";
+import { notify } from "@kyvg/vue3-notification";
+import { useRouter } from "vue-router";
 
 const showPass = ref(false);
 const registered = ref(false);
 const registeredMessage = ref('');
+
+const router = useRouter()
 
 const state = reactive({
   login: "",
@@ -42,14 +46,11 @@ const signUp = async () => {
     // router.push({ name: "Dashboard" });
   } catch (e) {
     if (e.response) {
-    //   notify(
-    //     {
-    //       group: "error",
-    //       title: "Error",
-    //       text: `${e.response.data.message}`,
-    //     },
-    //     6000
-    //   );
+      notify({
+        type: 'error',
+        title: 'Ошибка',
+        text: e?.response?.data?.message
+      });
     }
   }
 };
@@ -112,9 +113,9 @@ const signUp = async () => {
       <h2 class="text-h5 mb-6">{{ registeredMessage }}</h2>
 
       <p class="mb-4 text-medium-emphasis text-body-2">
-        <a href="/login" class="text-decoration-none text-info"
-          >Войти в систему</a
-        >
+        <!-- <router-link to="/login"
+          ><span class="text-decoration-none text-info">Войти в систему</span></router-link
+        > -->
         <br />
       </p>
 
@@ -127,6 +128,7 @@ const signUp = async () => {
           rounded
           variant="flat"
           width="90"
+          @click="router.push({ path: '/login' })"
         >
           Войти
         </v-btn>

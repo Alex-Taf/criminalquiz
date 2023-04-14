@@ -1,4 +1,4 @@
-import { $host, $authHost } from "."
+import { $host } from "."
 import jwt_decode from 'jwt-decode'
 import { getInitials } from "../utils"
 import { ISignInResponse, IUserData } from "../interfaces"
@@ -19,12 +19,6 @@ class UserAPI {
         this._writeProfileData({ data, decoded: jwt_decode(data.token) })
         return this._signInResponse
     }
-
-    // async check() {
-    //     const { data } = await $authHost.get('api/auth/auth')
-    //     localStorage.setItem('token', data.token)
-    //     return { data, decoded: jwt_decode(data.token) } as ISignInResponse
-    // }
 
     private _writeResponseData(response: ISignInResponse) {
         this._signInResponse = response
@@ -53,7 +47,7 @@ class UserAPI {
     }
 
     saveToStorage() {
-        localStorage.setItem("userId", this._profileData.id)
+        localStorage.setItem("userId", String(this._profileData.id))
         localStorage.setItem("login", this._profileData.login)
         localStorage.setItem("username", this._profileData.username)
         localStorage.setItem("initials", this._profileData.initials)

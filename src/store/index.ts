@@ -4,6 +4,7 @@ import { read, utils } from 'xlsx';
 import { IUserData } from "../interfaces"
 import { getFilename } from "../utils"
 import { useDatabase } from "../db"
+import { ServerOptions } from "vue3-easy-data-table"
 
 const $db = useDatabase()
 
@@ -16,7 +17,9 @@ export const useStore = defineStore({
         parsedData: {},
         dataset: [] as any,
         allTests: [] as any,
-        sheetsTotal: 0 as number,
+        testsTotal: 0,
+        estimationsTotal: 0,
+        sheetsTotal: 0,
         allTestsNames: [] as any,
         currentTest: {} as any,
         activeSheet: [] as any,
@@ -28,6 +31,9 @@ export const useStore = defineStore({
         wb: (state) => state.dataset,
         sheetsTotalCount: (state) => state.sheetsTotal,
         sheetActive: (state) => state.activeSheet,
+        tests: (state) => state.allTests,
+        total: (state) => state.testsTotal,
+        estTotal: (state) => state.estimationsTotal,
         testsNames: (state) => state.allTestsNames,
         test: (state) => state.currentTest,
         userData: (state) => state.user,
@@ -137,13 +143,41 @@ export const useStore = defineStore({
             $db
             .selectWhere('*', 'tests', `type = "${this.appMode}"`)
             .then(result => {
-                console.log(result)
                 this.allTests = result
                 this.allTestsNames = this.allTests.map((row) => {
                     return row.testname
                 })
                 router.push({ path: '/choosedb' })
             })
+        },
+        async loadAllTests(so?: ServerOptions, like?: { field: string, value: string }) {            
+            $db
+            .select(
+                '*',
+                'tests',
+                {
+                    page: so?.page,
+                    rowsPerPage: so?.rowsPerPage
+                },
+                {
+                    field: like?.field,
+                    value: like?.value
+                })
+            .then(result => {
+                this.allTests = result.data.map((row) => {
+                    return {
+                        id: row.id,
+                        testname: row.testname
+                    }
+                })
+
+                if (so?.page === 1) {
+                    this.testsTotal = result.pagination.total
+                }
+            })
+        },
+        async purgeTest(id: number) {
+            await $db.delete('tests', id)
         },
         doneQuiz(
             data: {
@@ -162,12 +196,42 @@ export const useStore = defineStore({
                     })
                 })
             },
-        loadUserEstimations(userId: number) {
-            // $db
-            // .selectWhere('*', 'users_estimations', ``)
-            // .then(row => {
-            //     $db.
-            // })
+        async loadUserEstimations(userId: number, so?: ServerOptions, like?: { field: string, value: string }) {
+            $db
+            .intermediateJoin(
+                ['tests.testname', 'estimations.estimation'],
+                'tests',
+                {
+                    name: 'users_estimations',
+                    values: ['tests.id', 'users_estimations.test_id'],
+                    operator: '='
+                },
+                {
+                    name: 'estimations',
+                    values: ['estimations.id', 'users_estimations.estimation_id'],
+                    operator: '='
+                },
+                {
+                    page: so?.page,
+                    rowsPerPage: so?.rowsPerPage
+                },
+                {
+                    field: like?.field,
+                    value: like?.value
+                }
+            ).then(result => { 
+                this.userEstimationsData = result.data.map((value, index) => {
+                    return {
+                        num: index + 1,
+                        testname: value.testname,
+                        estimation: value.estimation
+                    }
+                })
+
+                if (so?.page === 1) {
+                    this.estimationsTotal = result.pagination.total
+                }
+            })
         }
     }
 })

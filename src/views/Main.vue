@@ -44,8 +44,8 @@
     </div>
     <section v-if="selectedMode === ''" class="main-section">
         <h2>Выберите режим:</h2>
-        <v-btn class="main-btn" @click="setMode(MODES.quiz)">Тест</v-btn>
-        <v-btn class="main-btn" @click="setMode(MODES.trainer)">Тренажёр</v-btn>
+        <v-btn color="blue" class="main-btn" @click="setMode(MODES.quiz)">Тест</v-btn>
+        <v-btn color="green" class="main-btn" @click="setMode(MODES.trainer)">Тренажёр</v-btn>
     </section>
     <section v-if="selectedMode !== ''" class="input-section">
         <h3>Загрузите {{ selectedMode === 'trainer' ? 'тренажёр' : 'тест' }} из файла или пройдите {{ selectedMode === 'trainer' ? 'тренажёр' : 'тест' }} из базы:</h3>
@@ -99,7 +99,7 @@
         flex-direction: column;
     }
 
-    /* .main-btn {
-        font-size: 22px;
-    } */
+    .main-btn {
+        margin-bottom: 10px;
+    }
 </style>

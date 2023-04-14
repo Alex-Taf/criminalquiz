@@ -1,23 +1,23 @@
 <script setup lang="ts">
     import { onMounted, ref, watch, watchEffect } from 'vue';
     import { storeToRefs } from 'pinia';
-    import { userAPI } from '../http/user.api';
     import { useStore } from '../store';
     import { useRouter } from 'vue-router';
     import type { Header, ServerOptions } from "vue3-easy-data-table"
-    import { calculatePages, getEstimationColor } from "../utils"
+    import { calculatePages } from "../utils"
+    import { notify } from "@kyvg/vue3-notification";
 
     const router = useRouter()
 
     const store = useStore()
-    const { userEstimationsData, estTotal } = storeToRefs(store)
+    const { tests, total } = storeToRefs(store)
 
     const loading = ref(true)
 
     const search = ref('')
     const headers: Header[] = [
       { text: "Название теста", value: "testname" },
-      { text: "Оценка за тест", value: "estimation", sortable: true },
+      { text: "", value: "operation"}
     ];
 
     const totalLength = ref(0)
@@ -29,20 +29,32 @@
     });
 
     const setPagination = () => {
-        totalLength.value = estTotal.value
+        totalLength.value = total.value
         pages.value = calculatePages(totalLength.value, serverOptions.value.rowsPerPage)
     }
 
     const fetchData = async () => {
-      await store.loadUserEstimations(
-      +userAPI.storageUserData.id,
-      {
+      await store.loadAllTests({
         page: serverOptions.value.page,
         rowsPerPage: serverOptions.value.rowsPerPage
       },
       {
         field: 'testname',
         value: search.value
+      })
+    }
+
+    const removeTest = (id: number) => {
+      loading.value = true
+
+      // Async update when item delete
+      store.purgeTest(id).finally(() => {
+        notify({
+          type: 'success',
+          title: 'Запись удалена!'
+        })
+        
+        fetchData().finally(() => loading.value = false)
       })
     }
 
@@ -60,7 +72,7 @@
     )
 
     watchEffect(() => {
-      if (estTotal.value !== 0) {
+      if (total.value !== 0) {
         setPagination()
       }
     })
@@ -84,9 +96,9 @@
       <EasyDataTable
         :loading="loading"
         :headers="headers"
-        :items="userEstimationsData"
+        :items="tests"
         v-model:server-options="serverOptions"
-        :server-items-length="estTotal"
+        :server-items-length="total"
         :hide-footer="true"
       >
         <template #loading>
@@ -100,18 +112,17 @@
           <span style="font-size: 18px">{{ header.text }}</span>
         </template>
 
-        <template #header-estimation="header">
-          <span style="font-size: 18px">{{ header.text }}</span>
-        </template>
-
         <template #item-testname="{ testname }">
           <span style="font-size: 16px">{{ testname }}</span>
         </template>
 
-        <template #item-estimation="{ estimation }">
-          <span :style="{ fontSize: '16px', color: getEstimationColor(estimation) }">
-            {{ estimation }}
-          </span>
+        <template #item-operation="{ id }">
+            <div class="operation-wrapper">
+                <v-icon
+                    icon="mdi-delete-off"
+                    @click="removeTest(id)"
+                ></v-icon>
+            </div>
         </template>
       </EasyDataTable>
       <v-pagination

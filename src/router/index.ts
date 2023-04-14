@@ -8,6 +8,7 @@ import Trainer from "../views/Trainer.vue";
 import Login from "../views/Login.vue";
 import Registration from "../views/Registration.vue";
 import EstimationsHistory from "../views/EstimationsHistory.vue";
+import TestsPanel from "../views/TestsPanel.vue";
 
 const routes = [
     {
@@ -45,6 +46,12 @@ const routes = [
         name: 'EstimationsHistory',
         meta: { auth: true },
         component: EstimationsHistory
+    },
+    {
+        path: '/testspanel',
+        name: 'TestsPanel',
+        meta: { auth: true },
+        component: TestsPanel
     },
     {
         path: '/login',
