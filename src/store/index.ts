@@ -165,13 +165,6 @@ export const useStore = defineStore({
                     }
                 )
                 .then(result => {
-                    // this.allTests = result.data.map((row) => {
-                    //     return {
-                    //         id: row.id,
-                    //         testname: row.testname
-                    //     }
-                    // })
-
                     this.allTests = result.data
 
                     if (so.page === 1) {

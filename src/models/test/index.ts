@@ -7,7 +7,7 @@ class Test {
         options: {
             testname: string,
             dataset: string, // Stringified JSON
-            type: string, // ENUM types string value = app mode
+            type: string, // ENUM types string value = app mode (defined in /src/config)
             sheets_total: number
         }
         ) {
