@@ -3,10 +3,10 @@ import router from "../router";
 import { read, utils } from 'xlsx';
 import { IUserData } from "../interfaces"
 import { getFilename } from "../utils"
-import { useDatabase } from "../db"
+import { useModels } from "../bridge"
 import { ServerOptions } from "vue3-easy-data-table"
 
-const $db = useDatabase()
+const $models = useModels()
 
 export const useStore = defineStore({
     id: 'main',
@@ -98,7 +98,7 @@ export const useStore = defineStore({
                 const st = sheets.length
 
                 if (options && options.loadInDb) {
-                    $db.insert('tests', {
+                    $models.test.create({
                         testname: getFilename(e?.target?.files[0].name),
                         dataset: JSON.stringify(ds),
                         type: this.appMode,
@@ -140,44 +140,47 @@ export const useStore = defineStore({
             router.push({ path: '/choose' })
         },
         loadTests() {
-            $db
-            .selectWhere('*', 'tests', `type = "${this.appMode}"`)
-            .then(result => {
-                this.allTests = result
-                this.allTestsNames = this.allTests.map((row) => {
-                    return row.testname
+            $models
+                .test
+                .loadByAppMode(this.appMode)
+                .then(result => {
+                    this.allTests = result
+                    this.allTestsNames = this.allTests.map((row) => {
+                        return row.testname
+                    })
+                    router.push({ path: '/choosedb' })
                 })
-                router.push({ path: '/choosedb' })
-            })
         },
-        async loadAllTests(so?: ServerOptions, like?: { field: string, value: string }) {            
-            $db
-            .select(
-                '*',
-                'tests',
-                {
-                    page: so?.page,
-                    rowsPerPage: so?.rowsPerPage
-                },
-                {
-                    field: like?.field,
-                    value: like?.value
-                })
-            .then(result => {
-                this.allTests = result.data.map((row) => {
-                    return {
-                        id: row.id,
-                        testname: row.testname
+        async loadAllTests(so: ServerOptions, like?: { field: string, value: string }) {            
+            $models
+                .test
+                .loadWithOptions(
+                    {
+                        page: so?.page,
+                        rowsPerPage: so?.rowsPerPage
+                    },
+                    {
+                        field: like?.field,
+                        value: like?.value
+                    }
+                )
+                .then(result => {
+                    // this.allTests = result.data.map((row) => {
+                    //     return {
+                    //         id: row.id,
+                    //         testname: row.testname
+                    //     }
+                    // })
+
+                    this.allTests = result.data
+
+                    if (so.page === 1) {
+                        this.testsTotal = result.pagination.total
                     }
                 })
-
-                if (so?.page === 1) {
-                    this.testsTotal = result.pagination.total
-                }
-            })
         },
         async purgeTest(id: number) {
-            await $db.delete('tests', id)
+            await $models.test.delete(id)
         },
         doneQuiz(
             data: {
@@ -185,53 +188,46 @@ export const useStore = defineStore({
                 testId: number,
                 resultEstimation: number
             }) {
-                
-                $db
-                .selectWhere('id', 'estimations', `estimation = "${data.resultEstimation}"`)
-                .then(result => {
-                    $db.insert('users_estimations', {
-                        user_id: data.userId,
-                        test_id: data.testId,
-                        estimation_id: result[0].id
-                    })
-                })
-            },
-        async loadUserEstimations(userId: number, so?: ServerOptions, like?: { field: string, value: string }) {
-            $db
-            .intermediateJoin(
-                ['tests.testname', 'estimations.estimation'],
-                'tests',
-                {
-                    name: 'users_estimations',
-                    values: ['tests.id', 'users_estimations.test_id'],
-                    operator: '='
-                },
-                {
-                    name: 'estimations',
-                    values: ['estimations.id', 'users_estimations.estimation_id'],
-                    operator: '='
-                },
-                {
-                    page: so?.page,
-                    rowsPerPage: so?.rowsPerPage
-                },
-                {
-                    field: like?.field,
-                    value: like?.value
-                }
-            ).then(result => { 
-                this.userEstimationsData = result.data.map((value, index) => {
-                    return {
-                        num: index + 1,
-                        testname: value.testname,
-                        estimation: value.estimation
-                    }
-                })
 
-                if (so?.page === 1) {
-                    this.estimationsTotal = result.pagination.total
-                }
-            })
+                $models
+                    .estimation
+                    .getIdByEstimation(data.resultEstimation)
+                    .then(result => {
+                        $models
+                            .userEstimation
+                            .create({
+                                user_id: data.userId,
+                                test_id: data.testId,
+                                estimation_id: result[0].id
+                            })
+                    })
+            },
+        async loadUserEstimations(userId: number, so: ServerOptions, like?: { field: string, value: string }) {
+            $models
+                .userEstimation
+                .load(
+                    userId,
+                    {
+                        page: so?.page,
+                        rowsPerPage: so?.rowsPerPage
+                    },
+                    {
+                        field: like?.field,
+                        value: like?.value
+                    }
+                    ).then(result => { 
+                        this.userEstimationsData = result.data.map((value, index) => {
+                            return {
+                                num: index + 1,
+                                testname: value.testname,
+                                estimation: value.estimation
+                            }
+                        })
+        
+                        if (so?.page === 1) {
+                            this.estimationsTotal = result.pagination.total
+                        }
+                    })
         }
     }
 })

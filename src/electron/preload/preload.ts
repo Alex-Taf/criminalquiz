@@ -1,8 +1,12 @@
 import { contextBridge } from "electron"
 import dotenv from 'dotenv'
-import knex from "knex";
-import { attachPaginate } from "knex-paginate"
-attachPaginate()
+
+/** */
+ /* Import singletone models */
+/** */
+import test from "../../models/test"
+import estimation from "../../models/estimation"
+import userEstimation from "../../models/userEstimation"
 
 /** */
 /* Authorization server  */
@@ -67,16 +71,6 @@ window.addEventListener("DOMContentLoaded", () => {
 })
 
 /** */
-/* Sqlite Database QueryBuilder declaration  */
-/** */
-const db = knex({
-  client: 'sqlite3',
-  connection: {
-    filename: 'cq.db'
-  }
-})
-
-/** */
 /* Start authorization server after electron window has rendered  */
 /** */
 app.listen(4000, () => {
@@ -86,108 +80,64 @@ app.listen(4000, () => {
 /** */
 /* Context API for use system actions from application  */
 /** */
-contextBridge.exposeInMainWorld('db', {
-  select: (
-    entity: string,
-    table: string,
-    so?: { page: number, rowsPerPage: number },
-    like?: {
-      field: string,
-      value: string
-    } 
+contextBridge.exposeInMainWorld('models', {
+  test: {
+    create: (options: {
+      testname: string,
+      dataset: string, // Stringified JSON
+      type: string, // ENUM types string value = app mode
+      sheets_total: number
+    }) => {
+      return test.create(options)
+    },
+    loadByAppMode: (appMode: string) => {
+      return test.loadByAppMode(appMode)
+    },
+    loadWithOptions: (
+      // Pagination
+      so: {
+          page: number,
+          rowsPerPage: number
+      },
+      // Filter
+      like?: {
+          field: string,
+          value: string
+      }
     ) => {
-      if (so && !like) {
-        return db.select(entity).from(table).paginate({ perPage: so.rowsPerPage, currentPage: so.page }).then(rows => rows)
-      } 
-      
-      if (so && like) {
-        return db.select(entity).from(table).whereLike(like.field, `%${like.value}%`).paginate({ perPage: so.rowsPerPage, currentPage: so.page }).then(rows => rows)
-      } 
-      
-      if (!so && like) {
-        return db.select(entity).from(table).whereLike(like.field, `%${like.value}%`).then(rows => rows)
-      }
-
-      if (!so && !like) {
-        return db.select(entity).from(table).then(rows => rows)
-      }
+      return test.loadWithOptions(so, like)
     },
-  selectWhere: (entity: string, table: string, where: string) => db(table).whereRaw(where).select(entity).then(rows => rows),
-  insert: (table: string, options: Record<string | number, string | number>) => db(table).insert(options).then(),
-  join: (
-    table: string,
-    options: {
-      joinedTable: string,
-      entities: Array<string>,
-      operator: string
-    },
-    selection: Array<string>,
-  ) => {
-    return db(table)
-            .join(options.joinedTable, options.entities[0], options.operator, options.entities[1])
-            .select(...selection).then(rows => rows)
+    delete: (id: number) => {
+      return test.delete(id)
+    } 
   },
-  intermediateJoin: (
-    selectValues: [],
-    table1: string,
-    interTable: {
-      name: string,
-      values: string[],
-      operator: string
-    },
-    table3: {
-      name: string,
-      values: string[],
-      operator: string
-    },
-    so?: { page: number, rowsPerPage: number },
-    like?: {
-      field: string,
-      value: string
-    }
-  ) => {
-    if (so && !like) {
-      return db
-            .select(...selectValues)
-            .from(table1)
-            .join(interTable.name, interTable.values[0], interTable.operator, interTable.values[1])
-            .join(table3.name, table3.values[0], table3.operator, table3.values[1])
-            .paginate({ perPage: so.rowsPerPage, currentPage: so.page })
-            .then(rows => rows)
-    }
-
-    if (so && like) {
-      return db
-            .select(...selectValues)
-            .from(table1)
-            .whereLike(like.field, `%${like.value}%`)
-            .join(interTable.name, interTable.values[0], interTable.operator, interTable.values[1])
-            .join(table3.name, table3.values[0], table3.operator, table3.values[1])
-            .paginate({ perPage: so.rowsPerPage, currentPage: so.page })
-            .then(rows => rows)
-    }
-
-    if (!so && like) {
-      return db
-            .select(...selectValues)
-            .from(table1)
-            .whereLike(like.field, `%${like.value}%`)
-            .join(interTable.name, interTable.values[0], interTable.operator, interTable.values[1])
-            .join(table3.name, table3.values[0], table3.operator, table3.values[1])
-            .then(rows => rows)
-    }
-
-    if (!so && !like) {
-      return db
-            .select(...selectValues)
-            .from(table1)
-            .join(interTable.name, interTable.values[0], interTable.operator, interTable.values[1])
-            .join(table3.name, table3.values[0], table3.operator, table3.values[1])
-            .then(rows => rows)
+  estimation: {
+    getIdByEstimation: (resultEstimation: number) => {
+      return estimation.getIdByEstimation(resultEstimation)
     }
   },
-  delete: (table: string, id: number) => {
-    return db(table).where('id', id).del().then(rows => rows)
+  userEstimation: {
+    create: (options: {
+      user_id: number,
+      test_id: number,
+      estimation_id: any
+    }) => {
+      return userEstimation.create(options)
+    },
+    load: (
+      userId: number,
+      // Pagination
+      so: {
+          page: number,
+          rowsPerPage: number
+      },
+      // Filter
+      like?: {
+          field: string,
+          value: string
+      }
+    ) => {
+      return userEstimation.load(userId, so, like)
+    }
   }
-}
-)
+})

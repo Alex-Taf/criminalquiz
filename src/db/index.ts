@@ -1,5 +1,15 @@
-import { IDb } from "./index.interface"
+import knex from "knex"
+import { attachPaginate } from "knex-paginate"
+attachPaginate()
 
-export const useDatabase = (): IDb => {
-    return window.db ? window.db : 'Database not declared or exposed in main world'
-}
+/** */
+/* Sqlite Database QueryBuilder declaration  */
+/** */
+const db = knex({
+    client: 'sqlite3',
+    connection: {
+      filename: 'cq.db'
+    }
+})
+
+export default db
