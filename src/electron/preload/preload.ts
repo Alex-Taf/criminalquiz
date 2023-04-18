@@ -4,9 +4,9 @@ import dotenv from 'dotenv'
 /** */
  /* Import singletone models */
 /** */
-import test from "../../models/test"
-import estimation from "../../models/estimation"
-import userEstimation from "../../models/userEstimation"
+import test from "../../core/models/test"
+import estimation from "../../core/models/estimation"
+import userEstimation from "../../core/models/userEstimation"
 
 /** */
 /* Authorization server  */
@@ -14,7 +14,7 @@ import userEstimation from "../../models/userEstimation"
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
-import controller from "../../server/controllers/auth.controller";
+import controller from "../../core/server/controllers/auth.controller";
 
 dotenv.config()
 
