@@ -139,16 +139,28 @@ export const useStore = defineStore({
             this.dataset = JSON.parse(this.currentTest.dataset)
             router.push({ path: '/choose' })
         },
-        loadTests() {
+        async loadTestsByAppMode(so: ServerOptions, like?: { field: string, value: string }) {
             $models
                 .test
-                .loadByAppMode(this.appMode)
-                .then(result => {
-                    this.allTests = result
-                    this.allTestsNames = this.allTests.map((row) => {
+                .loadWithOptions({
+                    so: {
+                        page: so.page,
+                        rowsPerPage: so.rowsPerPage
+                    },
+                    like: {
+                        field: like?.field,
+                        value: like?.value
+                    },
+                    appMode: this.appMode
+                }).then(result => {
+                    this.allTests = result.data
+                    this.allTestsNames = result.data.map((row) => {
                         return row.testname
                     })
-                    router.push({ path: '/choosedb' })
+
+                    if (so.page === 1) {
+                        this.testsTotal = result.pagination.total
+                    }
                 })
         },
         async loadAllTests(so: ServerOptions, like?: { field: string, value: string }) {            
@@ -156,12 +168,14 @@ export const useStore = defineStore({
                 .test
                 .loadWithOptions(
                     {
-                        page: so?.page,
-                        rowsPerPage: so?.rowsPerPage
-                    },
-                    {
-                        field: like?.field,
-                        value: like?.value
+                        so: {
+                            page: so?.page,
+                            rowsPerPage: so?.rowsPerPage
+                        },
+                        like: {
+                            field: like?.field,
+                            value: like?.value
+                        }
                     }
                 )
                 .then(result => {

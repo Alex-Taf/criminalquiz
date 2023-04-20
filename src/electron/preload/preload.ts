@@ -94,18 +94,31 @@ contextBridge.exposeInMainWorld('models', {
       return test.loadByAppMode(appMode)
     },
     loadWithOptions: (
-      // Pagination
-      so: {
-          page: number,
-          rowsPerPage: number
-      },
-      // Filter
-      like?: {
-          field: string,
-          value: string
+      options: {
+        // Pagination
+          so: {
+            page: number,
+            rowsPerPage: number
+        },
+        // Filter
+        like?: {
+            field: string,
+            value: string
+        },
+        appMode?: string
       }
     ) => {
-      return test.loadWithOptions(so, like)
+      return test.loadWithOptions({
+        so: {
+          page: options.so.page,
+          rowsPerPage: options.so.rowsPerPage
+        },
+        like: {
+          field: options.like?.field as string,
+          value: options.like?.value as string
+        },
+        appMode: options.appMode
+      })
     },
     delete: (id: number) => {
       return test.delete(id)

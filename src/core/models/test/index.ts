@@ -22,29 +22,33 @@ class Test {
     }
 
     public async loadWithOptions(
-        // Pagination
-        so: {
-            page: number,
-            rowsPerPage: number
-        },
-        // Filter
-        like?: {
-            field: string,
-            value: string
-        }
+            options: {
+                // Pagination
+                so: {
+                    page: number,
+                    rowsPerPage: number
+                },
+                // Filter
+                like?: {
+                    field: string,
+                    value: string
+                },
+                appMode?: string
+            }
         ) {
-            if (!like) {
+            if (!options.like || !options.appMode) {
                 return db
-                        .select('id', 'testname')
+                        .select('*')
                         .from(this._table)
-                        .paginate({ perPage: so.rowsPerPage, currentPage: so.page })
+                        .paginate({ perPage: options.so.rowsPerPage, currentPage: options.so.page })
                         .then(rows => rows)
             } else {
                 return db
-                        .select('id', 'testname')
+                        .select('*')
                         .from(this._table)
-                        .whereLike(like.field, `%${like.value}%`)
-                        .paginate({ perPage: so.rowsPerPage, currentPage: so.page })
+                        .whereRaw(`type = "${options.appMode ? options.appMode : ''}"`)
+                        .whereLike(options.like.field, `%${options.like.value}%`)
+                        .paginate({ perPage: options.so.rowsPerPage, currentPage: options.so.page })
                         .then(rows => rows)
             }
     }

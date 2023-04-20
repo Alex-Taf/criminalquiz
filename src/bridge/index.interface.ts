@@ -13,13 +13,16 @@ export interface IModels {
         }) => Promise<IDbRowGeneric>,
         loadByAppMode: (appMode: string) => Promise<IDbRowGeneric>,
         loadWithOptions: (
-          so: {
-              page: number,
-              rowsPerPage: number
-          },
-          like?: {
-              field: string,
-              value: string
+          options: {
+            so: {
+                page: number,
+                rowsPerPage: number
+            },
+            like?: {
+                field: string,
+                value: string
+            },
+            appMode?: string
           }
         ) => Promise<IDbRowGeneric>,
         delete: (id: number) => Promise<IDbRowGeneric> 

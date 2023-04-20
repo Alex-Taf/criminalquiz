@@ -25,12 +25,17 @@
     }
 
     const loadFromDb = () => {
-        store.loadTests()
+        router.push({ path: '/choosedb' })
     }
 
     const setMode = (mode: string) => {
         selectedMode.value = mode
         store.chooseMode(selectedMode.value)
+    }
+
+    const reset = () => {
+        selectedMode.value = ""
+        store.chooseMode('')
     }
 </script>
 
@@ -57,8 +62,9 @@
             label="Перетащите .xls или .xlsx таблицу в это поле, либо загрузите файл нажав на скрепку"
             @change="upload"
         ></v-file-input>
-        <v-btn @click="loadFromDb()">Загрузить {{ selectedMode === 'trainer' ? 'тренажёр' : 'тест' }} из базы</v-btn>
-        <v-btn @click="loadToDbFlag = true">Загрузить {{ selectedMode === 'trainer' ? 'тренажёр': 'тест' }} в базу</v-btn>
+        <v-btn color="blue" class="mb-4" @click="loadFromDb()">Загрузить {{ selectedMode === 'trainer' ? 'тренажёр' : 'тест' }} из базы</v-btn>
+        <v-btn color="green" class="mb-4" @click="loadToDbFlag = true">Загрузить {{ selectedMode === 'trainer' ? 'тренажёр': 'тест' }} в базу</v-btn>
+        <v-btn color="orange" @click="reset()">Отмена</v-btn>
         <h4 v-show="loadToDbFlag">Выберите файл для загрузки в базу:</h4>
         <v-file-input
             v-show="loadToDbFlag"
