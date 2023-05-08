@@ -1,10 +1,12 @@
 <script setup lang="ts">
-    import { ref } from "vue"
+    import { onMounted, ref } from "vue"
     import { useRouter } from 'vue-router'
     import { useStore } from '../store/index'
+    import { storeToRefs } from "pinia"
     import { userAPI } from "../http/user.api"
 
     import ProfileMini from "../components/Profile/ProfileMini.vue"
+    import CurrentTests from "../components/CurrentTests/CurrentTests.vue"
 
     import { MODES } from '../config/index'
 
@@ -14,6 +16,8 @@
     const fileToDb = ref([])
     const store = useStore()
     const router = useRouter()
+
+    const { testsPipeline } = storeToRefs(store)
 
     const upload = (file: Event) => {
         store.loadTestsFromFile(file)
@@ -37,10 +41,15 @@
         selectedMode.value = ""
         store.chooseMode('')
     }
+
+    onMounted(() => {
+        store.loadTestsPipeline()
+    })
 </script>
 
 <template>
     <div class="profile-mini-container">
+        <CurrentTests :pipeline="testsPipeline" />
         <ProfileMini
             :initials="userAPI.storageUserData.initials"
             :login="userAPI.storageUserData.login"
@@ -86,6 +95,8 @@
 
     .profile-mini-container {
         position: absolute;
+        display: flex;
+        gap: 50px;
         top: 30px;
         right: 60px;
     }

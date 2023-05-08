@@ -26,10 +26,10 @@ const serverOptions = ref<ServerOptions>({
 
 const setPagination = () => {
   totalLength.value = total.value;
-  pages.value = calculatePages(
+  pages.value = Math.ceil(calculatePages(
     totalLength.value,
     serverOptions.value.rowsPerPage
-  );
+  ));
 };
 
 const fetchData = async () => {
@@ -74,15 +74,27 @@ watchEffect(() => {
     <h2 class="mb-10">
       Выберите {{ mode === "quiz" ? "тест" : "тренажёр" }} из списка
     </h2>
+    <v-card-text class="search">
+        <v-text-field
+          v-model.trim="search"
+          density="compact"
+          variant="solo"
+          label="Искать"
+          append-inner-icon="mdi-magnify"
+          single-line
+          hide-details
+          @input="fetchData"
+        ></v-text-field>
+    </v-card-text>
     <section class="sheets">
-      <template v-for="(test, index) in testsNames">
+      <template v-for="test in testsNames">
         <v-card class="mx-auto" max-width="344" variant="outlined">
           <v-card-item>
             <div>
               <div class="text-overline mb-1">
-                {{ mode === "quiz" ? "Тест" : "Тренажёр" }} №{{ index + 1 }}
+                {{ mode === "quiz" ? "Тест" : "Тренажёр" }} №{{ test.idx }}
               </div>
-              <div class="text-caption">{{ test }}</div>
+              <div class="text-caption">{{ test.testname }}</div>
             </div>
           </v-card-item>
 
@@ -90,7 +102,7 @@ watchEffect(() => {
             <v-btn
               color="teal-accent-4"
               variant="outlined"
-              @click="chooseTest(index + 1)"
+              @click="chooseTest(test.idx)"
             >
               Выбрать {{ mode === "quiz" ? "тест" : "тренажёр" }}
             </v-btn>
@@ -115,6 +127,10 @@ watchEffect(() => {
   justify-content: center;
   align-items: center;
   width: 100%;
+}
+
+.search {
+  width: 400px;
 }
 
 .sheets {

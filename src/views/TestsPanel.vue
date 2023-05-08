@@ -30,8 +30,8 @@
 
     const setPagination = () => {
         totalLength.value = total.value
-        pages.value = calculatePages(totalLength.value, serverOptions.value.rowsPerPage)
-    }
+        pages.value = Math.ceil(calculatePages(totalLength.value, serverOptions.value.rowsPerPage))
+      }
 
     const fetchData = async () => {
       await store.loadAllTests({
@@ -60,6 +60,9 @@
 
     onMounted(() => {
       fetchData().finally(() => loading.value = false)
+      if (total.value !== 0) {
+        setPagination()
+      }
     })
 
     watch(
@@ -72,6 +75,7 @@
     )
 
     watchEffect(() => {
+      console.log(total.value)
       if (total.value !== 0) {
         setPagination()
       }
@@ -128,7 +132,7 @@
       <v-pagination
         v-model="serverOptions.page"
         :length="pages"
-        :total-visible="6"
+        :total-visible="5"
       ></v-pagination>
       </v-card>
     <v-btn color="blue" @click="router.push({ path: '/' })">Вернуться на главную</v-btn>

@@ -90,9 +90,7 @@ contextBridge.exposeInMainWorld('models', {
     }) => {
       return test.create(options)
     },
-    loadByAppMode: (appMode: string) => {
-      return test.loadByAppMode(appMode)
-    },
+    loadById: (id: number) => test.loadById(id),
     loadWithOptions: (
       options: {
         // Pagination

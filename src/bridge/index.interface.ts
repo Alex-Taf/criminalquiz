@@ -1,4 +1,8 @@
 interface IDbRowGeneric {
+    sheets_total: any
+    dataset(dataset: any): any
+    data: any
+    pagination: any
     length: number,
     result: Array<Record<string | number, string | number>>
 }
@@ -11,7 +15,7 @@ export interface IModels {
           type: string, // ENUM types string value = app mode
           sheets_total: number
         }) => Promise<IDbRowGeneric>,
-        loadByAppMode: (appMode: string) => Promise<IDbRowGeneric>,
+        loadById: (id: number) => Promise<IDbRowGeneric>,
         loadWithOptions: (
           options: {
             so: {

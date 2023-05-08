@@ -14,11 +14,8 @@ class Test {
             return db(this._table).insert(options).then()
     }
 
-    public async loadByAppMode(appMode: string) {
-        return db(this._table)
-            .whereRaw(`type = "${appMode}"`)
-            .select('*')
-            .then(rows => rows)
+    public async loadById(id: number) {
+        return db(this._table).select('*').where('id', id).then(row => row)
     }
 
     public async loadWithOptions(

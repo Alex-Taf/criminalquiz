@@ -2,11 +2,12 @@ import { defineStore } from 'pinia';
 import router from "../router";
 import { read, utils } from 'xlsx';
 import { IUserData } from "../interfaces"
-import { getFilename } from "../utils"
+import { LocalPipeline, Objectify, getFilename } from "../utils"
 import { useModels } from "../bridge"
 import { ServerOptions } from "vue3-easy-data-table"
 
 const $models = useModels()
+const lp = new LocalPipeline()
 
 export const useStore = defineStore({
     id: 'main',
@@ -24,7 +25,8 @@ export const useStore = defineStore({
         currentTest: {} as any,
         activeSheet: [] as any,
         activeQuestion: {} as any,
-        userEstimationsData: [] as any
+        userEstimationsData: [] as any,
+        testsPipeline: []
     }),
     getters: {
         mode: (state) => state.appMode,
@@ -37,7 +39,8 @@ export const useStore = defineStore({
         testsNames: (state) => state.allTestsNames,
         test: (state) => state.currentTest,
         userData: (state) => state.user,
-        userEstimations: (state) => state.userEstimationsData
+        userEstimations: (state) => state.userEstimationsData,
+        pipeline: (state) => state.testsPipeline
     },
     actions: {
         async loadTestsFromFile(e: Event, options?: { loadInDb?: boolean }) {
@@ -50,10 +53,13 @@ export const useStore = defineStore({
                 
                 /* DO SOMETHING WITH workbook HERE */
                 // this.workbook = utils.sheet_to_json(this.parsedData.Sheets[this.parsedData.SheetNames[0]])
-                let sheets = []
+                let sheets: Array<{ idx: number, item: any }> = []
 
                 for (let i = 0; i < this.parsedData.SheetNames.length; i++) {
-                    sheets.push(utils.sheet_to_json(this.parsedData.Sheets[this.parsedData.SheetNames[i]]))
+                    sheets.push({
+                        idx: i + 1,
+                        item: utils.sheet_to_json(this.parsedData.Sheets[this.parsedData.SheetNames[i]])
+                    })
                 }
 
                 const replacements = {
@@ -83,16 +89,19 @@ export const useStore = defineStore({
                 }
 
                 const ds = sheets.map((sheet) => {
-                    return sheet.map((question) => {
-                        const keyValues = Object.keys(question).map(key => {
-                            const newKey = replacements[key] || key;
-                            return { [newKey]: question[key] };
-                          });
-
-                        const newObject = Object.assign({}, ...keyValues);
-
-                        return newObject;
-                    })
+                    return {
+                        idx: sheet.idx,
+                        item: sheet.item.map((question) => {
+                            const keyValues = Object.keys(question).map(key => {
+                                const newKey = replacements[key] || key;
+                                return { [newKey]: question[key] };
+                              });
+    
+                            const newObject = Object.assign({}, ...keyValues);
+    
+                            return newObject;
+                        })
+                    }
                 })
 
                 const st = sheets.length
@@ -113,7 +122,7 @@ export const useStore = defineStore({
             }
         },
         chooseSheet(num: number) {
-            const currentDataset = this.dataset[num]
+            const currentDataset = this.dataset[num].item
             const newCurr = currentDataset.map((q) => {
                 const variants = Object.fromEntries(
                     Object.entries(q)
@@ -134,10 +143,64 @@ export const useStore = defineStore({
             this.appMode = mode
         },
         chooseTest(testNum: number) {
-            this.currentTest = this.allTests[testNum]
+            this.currentTest = this.allTests[testNum].row
             this.sheetsTotal = this.currentTest.sheets_total
             this.dataset = JSON.parse(this.currentTest.dataset)
             router.push({ path: '/choose' })
+        },
+        saveQuizToLocalPipeline(data: {
+            testId: number,
+            mode: string,
+            sheetActive: any,
+            state: any
+        }) {
+            // console.log(this.testsPipeline)
+            // this.testsPipeline.push(data)
+            lp.save("testsPipeline", data)
+        },
+        updateQuizInLocalPipeline(data: {
+            testId: number,
+            mode: string,
+            sheetActive: any,
+            state: any
+        }) {
+            lp.update("testsPipeline", data)
+        },
+        async loadTestsPipeline() {
+            const pipeline = await lp.load("testsPipeline")
+            
+            if (pipeline.length > 0) {
+                this.testsPipeline = pipeline
+            }
+        },
+        loadTestFromPipeline(id: number) {
+            $models
+            .test
+            .loadById(id)
+            .then(result => {
+                const currentTest = this.testsPipeline.find((testId) => id === testId)
+
+                this.appMode = currentTest.appMode
+                this.activeSheet = currentTest.sheetActive
+                this.currentTest = result
+                this.sheetsTotal = result.sheets_total
+                this.dataset = JSON.parse(result.dataset)
+                
+                if (this.appMode === 'quiz') router.push({ path: '/quiz' })
+                if (this.appMode === 'trainer') router.push({ path: '/trainer' })
+            })
+        },
+        loadStateFromPipeline(id: number) {
+            const currentTest = this.testsPipeline.find((test) => id === test.testId)
+            return currentTest.state
+        },
+        deleteTestFromPipeline(id: number) {
+            lp.delete("testsPipeline", id)
+        },
+        isTestInPipeline(id: number) {
+            console.log(this.testsPipeline)
+            console.log(this.testsPipeline.some(test => test.testId === id))
+            return !!this.testsPipeline.find(test => test.testId === id)
         },
         async loadTestsByAppMode(so: ServerOptions, like?: { field: string, value: string }) {
             $models
@@ -153,9 +216,18 @@ export const useStore = defineStore({
                     },
                     appMode: this.appMode
                 }).then(result => {
-                    this.allTests = result.data
-                    this.allTestsNames = result.data.map((row) => {
-                        return row.testname
+                    this.allTests = result.data.map((row, index) => {
+                        return {
+                            idx: index + result.pagination.from + 1,
+                            row
+                        }
+                    })
+
+                    this.allTestsNames = this.allTests.map((test) => {
+                        return {
+                            idx: test.idx,
+                            testname: test.row.testname
+                        }
                     })
 
                     if (so.page === 1) {
@@ -179,7 +251,12 @@ export const useStore = defineStore({
                     }
                 )
                 .then(result => {
-                    this.allTests = result.data
+                    this.allTests = result.data.map((row, index) => {
+                        return {
+                            idx: index + result.pagination.from + 1,
+                            row
+                        }
+                    })
 
                     if (so.page === 1) {
                         this.testsTotal = result.pagination.total

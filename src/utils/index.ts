@@ -1,6 +1,7 @@
 import { toRaw } from 'vue'
 import { OBJECTIFY_MODES } from '../config/index'
 import { IGetInitials, ICalculatePages, IGetEstimationColor } from './index.interface'
+import Localbase from 'localbase'
 
 export const Objectify = (target: any, type: string) => {
     if (type === OBJECTIFY_MODES.JSON) return JSON.parse(JSON.stringify(target))
@@ -87,4 +88,26 @@ export const saveReportAs = (report: string) => {
 
 export const getFilename = (fullFilename: string): string => {
     return fullFilename.split('.')[0]
+}
+
+export class LocalPipeline {
+    private readonly _LB = new Localbase('db')
+
+    public save(name: string, data: any) {
+        this._LB.collection(name).add(Objectify(data, 'JSON'))
+    }
+
+    public async load(name: string) {
+        return await this._LB.collection(name).get().then(rows => {
+            return rows
+        })
+    }
+
+    public update(name: string, data: any) {
+        this._LB.collection(name).doc({ testId: data.testId }).update(Objectify(data, 'JSON'))
+    }
+
+    public delete(name: string, testId: number) {
+        this._LB.collection(name).doc({ testId }).delete()
+    }
 }

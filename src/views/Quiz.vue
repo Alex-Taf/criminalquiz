@@ -9,12 +9,12 @@
     const store = useStore()
     const router = useRouter()
 
-    const { sheetActive, currentTest } = storeToRefs(store)
+    const { sheetActive, currentTest, mode } = storeToRefs(store)
 
     const count = ref(0)
     const activeNum = ref(1)
     const questions = ref([])
-    const currentQuestion = reactive({})
+    let currentQuestion = reactive({})
     const currentQuestionAnswers = ref([])
     const correctQuestionAnswers = ref([])
     const correctVariantsCount = ref(0)
@@ -81,11 +81,60 @@
         count.value++
         activeNum.value = questions.value[count.value].num
         quizDonePercent.value = `${+(count.value / questionsCount.value).toFixed(2) * 100}%`
-        
+
+        if (!isQuizDone.value) {
+            if (!store.isTestInPipeline(currentTest.value.id)) {
+                store.saveQuizToLocalPipeline({
+                    testId: currentTest.value.id,
+                    mode: mode.value,
+                    sheetActive: sheetActive.value,
+                    state: {
+                        count: count.value,
+                        activeNum: activeNum.value,
+                        questions: questions.value, 
+                        currentQuestion: currentQuestion,
+                        currentQuestionAnswers: currentQuestionAnswers.value,
+                        correctQuestionAnswers: correctQuestionAnswers.value,
+                        correctVariantsCount: correctVariantsCount.value,
+                        selection: selection.value,
+                        questionsCount: questionsCount.value,
+                        score: score.value,
+                        result: result.value,
+                        quizDonePercent: quizDonePercent.value,
+                        report: report.value,
+                        isQuizDone: isQuizDone.value
+                    }
+                })
+            } else {
+                store.updateQuizInLocalPipeline({
+                    testId: currentTest.value.id,
+                    mode: mode.value,
+                    sheetActive: sheetActive.value,
+                    state: {
+                        count: count.value,
+                        activeNum: activeNum.value,
+                        questions: questions.value, 
+                        currentQuestion: currentQuestion,
+                        currentQuestionAnswers: currentQuestionAnswers.value,
+                        correctQuestionAnswers: correctQuestionAnswers.value,
+                        correctVariantsCount: correctVariantsCount.value,
+                        selection: selection.value,
+                        questionsCount: questionsCount.value,
+                        score: score.value,
+                        result: result.value,
+                        quizDonePercent: quizDonePercent.value,
+                        report: report.value,
+                        isQuizDone: isQuizDone.value
+                    }
+                })
+            }
+        } else {
+            store.deleteTestFromPipeline(currentTest.value.id)
+        }
+
         getCurrentQuestion()
         getQuestionAnswers(getQuestionVariants())
     }
-
 
     const isDisabled = (currentSelection: any) => {
         return selection.value.length === correctQuestionAnswers.value.length && !selection.value.includes(currentSelection)
@@ -97,8 +146,6 @@
 
         return qObject?.num === activeNum.value
     }
-
-    console.log(+userAPI.storageUserData.id)
 
     const doneQuiz = () => {
         isQuizDone.value = true
@@ -122,6 +169,25 @@
 
     // Init
     onMounted(() => {
+        if (store.isTestInPipeline(currentTest.value.id)) {
+            const state = store.loadStateFromPipeline(currentTest.value.id)
+
+            count.value = state.count,
+            activeNum.value = state.activeNum,
+            questions.value = state.questions, 
+            currentQuestion = state.currentQuestion,
+            currentQuestionAnswers.value = state.currentQuestionAnswers,
+            correctQuestionAnswers.value = state.correctQuestionAnswers,
+            correctVariantsCount.value =  state.correctVariantsCount,
+            selection.value = state.selection,
+            questionsCount.value = state.questionsCount,
+            score.value = state.score,
+            result.value = state.result,
+            quizDonePercent.value = state.quizDonePercent,
+            report.value = state.report,
+            isQuizDone.value = state.isQuizDone
+        }
+
         getQuestions()
         getQuestionsCount()
         getCurrentQuestion()
