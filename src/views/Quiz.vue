@@ -27,7 +27,9 @@
     const isQuizDone = ref(false)
 
     const getQuestions = () => {
+        console.log(sheetActive.value)
         questions.value = sheetActive.value.filter((question) => {
+            console.log(question)
             return question.variants.length > 1
         })
     }
@@ -83,51 +85,56 @@
         quizDonePercent.value = `${+(count.value / questionsCount.value).toFixed(2) * 100}%`
 
         if (!isQuizDone.value) {
-            if (!store.isTestInPipeline(currentTest.value.id)) {
-                store.saveQuizToLocalPipeline({
-                    testId: currentTest.value.id,
-                    mode: mode.value,
-                    sheetActive: sheetActive.value,
-                    state: {
-                        count: count.value,
-                        activeNum: activeNum.value,
-                        questions: questions.value, 
-                        currentQuestion: currentQuestion,
-                        currentQuestionAnswers: currentQuestionAnswers.value,
-                        correctQuestionAnswers: correctQuestionAnswers.value,
-                        correctVariantsCount: correctVariantsCount.value,
-                        selection: selection.value,
-                        questionsCount: questionsCount.value,
-                        score: score.value,
-                        result: result.value,
-                        quizDonePercent: quizDonePercent.value,
-                        report: report.value,
-                        isQuizDone: isQuizDone.value
-                    }
-                })
-            } else {
-                store.updateQuizInLocalPipeline({
-                    testId: currentTest.value.id,
-                    mode: mode.value,
-                    sheetActive: sheetActive.value,
-                    state: {
-                        count: count.value,
-                        activeNum: activeNum.value,
-                        questions: questions.value, 
-                        currentQuestion: currentQuestion,
-                        currentQuestionAnswers: currentQuestionAnswers.value,
-                        correctQuestionAnswers: correctQuestionAnswers.value,
-                        correctVariantsCount: correctVariantsCount.value,
-                        selection: selection.value,
-                        questionsCount: questionsCount.value,
-                        score: score.value,
-                        result: result.value,
-                        quizDonePercent: quizDonePercent.value,
-                        report: report.value,
-                        isQuizDone: isQuizDone.value
-                    }
-                })
-            }
+            /* Reload init pipeline */
+            store.loadTestsPipeline().then(() => {
+                if (!store.isTestInPipeline(currentTest.value.id)) {
+                    store.saveQuizToLocalPipeline({
+                        testId: currentTest.value.id,
+                        testname: currentTest.value.testname,
+                        mode: mode.value,
+                        sheetActive: Objectify(sheetActive.value, 'JSON'),
+                        state: {
+                            count: count.value,
+                            activeNum: activeNum.value,
+                            questions: questions.value, 
+                            currentQuestion: currentQuestion,
+                            currentQuestionAnswers: currentQuestionAnswers.value,
+                            correctQuestionAnswers: correctQuestionAnswers.value,
+                            correctVariantsCount: correctVariantsCount.value,
+                            selection: selection.value,
+                            questionsCount: questionsCount.value,
+                            score: score.value,
+                            result: result.value,
+                            quizDonePercent: quizDonePercent.value,
+                            report: report.value,
+                            isQuizDone: isQuizDone.value
+                        }
+                    })
+                } else {
+                    store.updateQuizInLocalPipeline({
+                        testId: currentTest.value.id,
+                        testname: currentTest.value.testname,
+                        mode: mode.value,
+                        sheetActive: Objectify(sheetActive.value, 'JSON'),
+                        state: {
+                            count: count.value,
+                            activeNum: activeNum.value,
+                            questions: questions.value, 
+                            currentQuestion: currentQuestion,
+                            currentQuestionAnswers: currentQuestionAnswers.value,
+                            correctQuestionAnswers: correctQuestionAnswers.value,
+                            correctVariantsCount: correctVariantsCount.value,
+                            selection: selection.value,
+                            questionsCount: questionsCount.value,
+                            score: score.value,
+                            result: result.value,
+                            quizDonePercent: quizDonePercent.value,
+                            report: report.value,
+                            isQuizDone: isQuizDone.value
+                        }
+                    })
+                }
+            })
         } else {
             store.deleteTestFromPipeline(currentTest.value.id)
         }

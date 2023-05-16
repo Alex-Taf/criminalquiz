@@ -123,6 +123,7 @@ export const useStore = defineStore({
         },
         chooseSheet(num: number) {
             const currentDataset = this.dataset[num].item
+            console.log(currentDataset)
             const newCurr = currentDataset.map((q) => {
                 const variants = Object.fromEntries(
                     Object.entries(q)
@@ -143,23 +144,23 @@ export const useStore = defineStore({
             this.appMode = mode
         },
         chooseTest(testNum: number) {
-            this.currentTest = this.allTests[testNum].row
+            this.currentTest = this.allTests[testNum].row || this.allTests[testNum]
             this.sheetsTotal = this.currentTest.sheets_total
             this.dataset = JSON.parse(this.currentTest.dataset)
             router.push({ path: '/choose' })
         },
-        saveQuizToLocalPipeline(data: {
+        async saveQuizToLocalPipeline(data: {
             testId: number,
+            testname: string,
             mode: string,
             sheetActive: any,
             state: any
         }) {
-            // console.log(this.testsPipeline)
-            // this.testsPipeline.push(data)
             lp.save("testsPipeline", data)
         },
-        updateQuizInLocalPipeline(data: {
+        async updateQuizInLocalPipeline(data: {
             testId: number,
+            testname: string,
             mode: string,
             sheetActive: any,
             state: any
@@ -167,24 +168,38 @@ export const useStore = defineStore({
             lp.update("testsPipeline", data)
         },
         async loadTestsPipeline() {
-            const pipeline = await lp.load("testsPipeline")
-            
-            if (pipeline.length > 0) {
-                this.testsPipeline = pipeline
-            }
+            this.testsPipeline = await lp.load("testsPipeline")
         },
         loadTestFromPipeline(id: number) {
             $models
             .test
             .loadById(id)
             .then(result => {
-                const currentTest = this.testsPipeline.find((testId) => id === testId)
+                const currentTest = this.testsPipeline.find((test) => test.testId === id)
 
-                this.appMode = currentTest.appMode
-                this.activeSheet = currentTest.sheetActive
+
+                this.appMode = currentTest.mode
                 this.currentTest = result
                 this.sheetsTotal = result.sheets_total
                 this.dataset = JSON.parse(result.dataset)
+
+                console.log(this.dataset)
+
+                const newCurr = this.dataset[0].item.map((q) => {
+                    const variants = Object.fromEntries(
+                        Object.entries(q)
+                        .filter(
+                            ([key, value]) => key.includes('var') && !isNaN(value as number)));
+                        
+                    Object.defineProperty(q, 'variants', {
+                        value: Object.values(variants),
+                        writable: true
+                    })
+    
+                    return q
+                })
+    
+                this.activeSheet = newCurr
                 
                 if (this.appMode === 'quiz') router.push({ path: '/quiz' })
                 if (this.appMode === 'trainer') router.push({ path: '/trainer' })
@@ -198,9 +213,9 @@ export const useStore = defineStore({
             lp.delete("testsPipeline", id)
         },
         isTestInPipeline(id: number) {
-            console.log(this.testsPipeline)
-            console.log(this.testsPipeline.some(test => test.testId === id))
-            return !!this.testsPipeline.find(test => test.testId === id)
+            console.log(Objectify(this.testsPipeline, 'JSON'))
+            console.log(Objectify(this.testsPipeline, 'JSON').some(test => test.testId === id))
+            return Objectify(this.testsPipeline, 'JSON').some(test => test.testId === id)
         },
         async loadTestsByAppMode(so: ServerOptions, like?: { field: string, value: string }) {
             $models

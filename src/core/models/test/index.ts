@@ -15,7 +15,7 @@ class Test {
     }
 
     public async loadById(id: number) {
-        return db(this._table).select('*').where('id', id).then(row => row)
+        return db(this._table).select('*').where('id', id).then(row => row[0])
     }
 
     public async loadWithOptions(

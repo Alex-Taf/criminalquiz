@@ -1,15 +1,15 @@
 <script setup lang="ts">
-    import { ref } from 'vue'
+    import { onMounted, ref, watchEffect } from 'vue'
     import { storeToRefs } from 'pinia'
     import { useStore } from '../store/index'
-    import { saveReportAs } from "../utils"
+    import { Objectify, saveReportAs } from "../utils"
     import { useRouter } from "vue-router"
 
     const router = useRouter()
 
     const store = useStore()
 
-    const { sheetActive } = storeToRefs(store)
+    const { sheetActive, currentTest, mode } = storeToRefs(store)
 
     const activeNum = ref(1)
     const report = ref('')
@@ -18,10 +18,41 @@
     const changeActiveQuestion = (num: number) => {
         if (num === -1) isDone.value = true
         if (num !== -1) activeNum.value = num
+
+        if (!isDone.value) {
+            /* Reload init pipeline */
+            store.loadTestsPipeline().then(() => {
+                if (!store.isTestInPipeline(currentTest.value.id)) {
+                    store.saveQuizToLocalPipeline({
+                        testId: currentTest.value.id,
+                        testname: currentTest.value.testname,
+                        mode: mode.value,
+                        sheetActive: Objectify(sheetActive.value, 'JSON'),
+                        state: {
+                            activeNum: activeNum.value,
+                            isDone: isDone.value
+                        }
+                    })
+                } else {
+                    store.updateQuizInLocalPipeline({
+                        testId: currentTest.value.id,
+                        testname: currentTest.value.testname,
+                        mode: mode.value,
+                        sheetActive: Objectify(sheetActive.value, 'JSON'),
+                        state: {
+                            activeNum: activeNum.value,
+                            isDone: isDone.value
+                        }
+                    })
+                }
+            })
+        } else {
+            store.deleteTestFromPipeline(currentTest.value.id)
+        }
     }
 
     const findQuestionLabel = () => {
-        return sheetActive.value.find((q) => q.num === 1).question
+        return sheetActive.value.find((q) => q.num === activeNum.value).question
     }
 
     const getActiveVariants = () => {
@@ -34,6 +65,20 @@
 
         return sheetActive.value.find(question => question.num === activeNum.value).variants
     }
+
+    // Init
+    onMounted(() => {
+        if (store.isTestInPipeline(currentTest.value.id)) {
+            const state = store.loadStateFromPipeline(currentTest.value.id)
+
+            activeNum.value = state.activeNum
+            isDone.value = state.isDone
+        }
+    })
+
+    watchEffect(() => {
+        console.log(activeNum.value)
+    })
 </script>
 
 <template>
