@@ -39,6 +39,7 @@
 
     const reset = () => {
         selectedMode.value = ""
+        loadToDbFlag.value = false
         store.chooseMode('')
     }
 
@@ -48,7 +49,7 @@
 </script>
 
 <template>
-    <div class="profile-mini-container">
+    <div class="tw-absolute tw-flex tw-gap-[50px] tw-top-[30px] tw-right-[60px]">
         <CurrentTests :pipeline="testsPipeline" />
         <ProfileMini
             :initials="userAPI.storageUserData.initials"
@@ -56,34 +57,35 @@
             :full-user-name="userAPI.storageUserData.username"
         />
     </div>
-    <section v-if="selectedMode === ''" class="main-section">
+    <section v-if="selectedMode === ''" class="tw-flex tw-flex-col tw-gap-x-2">
         <h2>Выберите режим:</h2>
-        <v-btn color="blue" class="main-btn" @click="setMode(MODES.quiz)">Тест</v-btn>
-        <v-btn color="green" class="main-btn" @click="setMode(MODES.trainer)">Тренажёр</v-btn>
+        <v-btn color="blue" class="tw-mb-[10px]" @click="setMode(MODES.quiz)">Тест</v-btn>
+        <v-btn color="green" class="tw-mb-[10px]" @click="setMode(MODES.trainer)">Тренажёр</v-btn>
     </section>
-    <section v-if="selectedMode !== ''" class="input-section">
-        <h3>Загрузите {{ selectedMode === 'trainer' ? 'тренажёр' : 'тест' }} из файла или пройдите {{ selectedMode === 'trainer' ? 'тренажёр' : 'тест' }} из базы:</h3>
+    <section v-if="selectedMode !== ''" class="tw-flex tw-flex-col tw-gap-x-2">
+        <h3 v-show="!loadToDbFlag" class="tw-mb-2">Загрузите {{ selectedMode === 'trainer' ? 'тренажёр' : 'тест' }} из файла или пройдите {{ selectedMode === 'trainer' ? 'тренажёр' : 'тест' }} из базы:</h3>
         <v-file-input
-            class="sto"
+            v-show="!loadToDbFlag"
+            class="tw-w-[650px]"
             clearable
             accept=".xls, .xlsx"
             v-model="file"
             label="Перетащите .xls или .xlsx таблицу в это поле, либо загрузите файл нажав на скрепку"
             @change="upload"
         ></v-file-input>
-        <v-btn color="blue" class="mb-4" @click="loadFromDb()">Загрузить {{ selectedMode === 'trainer' ? 'тренажёр' : 'тест' }} из базы</v-btn>
-        <v-btn color="green" class="mb-4" @click="loadToDbFlag = true">Загрузить {{ selectedMode === 'trainer' ? 'тренажёр': 'тест' }} в базу</v-btn>
-        <v-btn color="orange" @click="reset()">Отмена</v-btn>
         <h4 v-show="loadToDbFlag">Выберите файл для загрузки в базу:</h4>
         <v-file-input
             v-show="loadToDbFlag"
-            class="sto"
+            class="tw-w-[650px]"
             clearable
             accept=".xls, .xlsx"
             v-model="fileToDb"
             label="Перетащите .xls или .xlsx таблицу в это поле, либо загрузите файл нажав на скрепку"
             @change="uploadToDb"
         ></v-file-input>
+        <v-btn color="blue" class="mb-4" v-show="!loadToDbFlag" @click="loadFromDb()">Загрузить {{ selectedMode === 'trainer' ? 'тренажёр' : 'тест' }} из базы</v-btn>
+        <v-btn color="green" class="mb-4" v-show="!loadToDbFlag" @click="loadToDbFlag = true">Загрузить {{ selectedMode === 'trainer' ? 'тренажёр': 'тест' }} в базу</v-btn>
+        <v-btn color="orange" @click="reset()">Отмена</v-btn>
     </section>
 </template>
 
@@ -91,32 +93,5 @@
     h2 {
         margin-bottom: 5px;
         font-size: 36px;
-    }
-
-    .profile-mini-container {
-        position: absolute;
-        display: flex;
-        gap: 50px;
-        top: 30px;
-        right: 60px;
-    }
-
-    .sto {
-        width: 650px;
-    }
-
-    .main-section {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-    }
-
-    .input-section {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .main-btn {
-        margin-bottom: 10px;
     }
 </style>

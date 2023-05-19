@@ -48,18 +48,18 @@
       loading.value = true
 
       // Async update when item delete
-      store.purgeTest(id).finally(() => {
+      store.purgeTest(id).then(() => {
         notify({
           type: 'success',
           title: 'Запись удалена!'
         })
         
-        fetchData().finally(() => loading.value = false)
+        fetchData().then(() => loading.value = false)
       })
     }
 
     onMounted(() => {
-      fetchData().finally(() => loading.value = false)
+      fetchData().then(() => loading.value = false)
       if (total.value !== 0) {
         setPagination()
       }
@@ -69,13 +69,13 @@
       serverOptions,
       () => {
         loading.value = true
-        fetchData().finally(() => loading.value = false)
+        fetchData().then(() => loading.value = false)
       },
       { deep: true }
     )
 
     watchEffect(() => {
-      console.log(total.value)
+      console.log(tests.value)
       if (total.value !== 0) {
         setPagination()
       }
@@ -116,15 +116,15 @@
           <span style="font-size: 18px">{{ header.text }}</span>
         </template>
 
-        <template #item-testname="{ testname }">
-          <span style="font-size: 16px">{{ testname }}</span>
+        <template #item-testname="{ row }">
+          <span style="font-size: 16px">{{ row.testname }}</span>
         </template>
 
-        <template #item-operation="{ id }">
+        <template #item-operation="{ idx }">
             <div class="operation-wrapper">
                 <v-icon
                     icon="mdi-delete-off"
-                    @click="removeTest(id)"
+                    @click="removeTest(idx)"
                 ></v-icon>
             </div>
         </template>

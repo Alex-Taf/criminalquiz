@@ -26,10 +26,9 @@ const serverOptions = ref<ServerOptions>({
 
 const setPagination = () => {
   totalLength.value = total.value;
-  pages.value = Math.ceil(calculatePages(
-    totalLength.value,
-    serverOptions.value.rowsPerPage
-  ));
+  pages.value = Math.ceil(
+    calculatePages(totalLength.value, serverOptions.value.rowsPerPage)
+  );
 };
 
 const fetchData = async () => {
@@ -70,25 +69,34 @@ watchEffect(() => {
 </script>
 
 <template>
-  <section class="container">
+  <section
+    class="tw-flex tw-flex-col tw-justify-center tw-items-center tw-w-full"
+  >
     <h2 class="mb-10">
       Выберите {{ mode === "quiz" ? "тест" : "тренажёр" }} из списка
     </h2>
-    <v-card-text class="search">
-        <v-text-field
-          v-model.trim="search"
-          density="compact"
-          variant="solo"
-          label="Искать"
-          append-inner-icon="mdi-magnify"
-          single-line
-          hide-details
-          @input="fetchData"
-        ></v-text-field>
+    <v-card-text class="tw-w-[400px]">
+      <v-text-field
+        v-model.trim="search"
+        density="compact"
+        variant="solo"
+        label="Искать"
+        append-inner-icon="mdi-magnify"
+        single-line
+        hide-details
+        @input="fetchData"
+      ></v-text-field>
     </v-card-text>
-    <section class="sheets">
+    <section
+      class="tw-grid tw-grid-cols-2 tw-gap-[10px] tw-w-[400px] tw-min-h-[420px]"
+    >
       <template v-for="test in testsNames">
-        <v-card class="mx-auto" max-width="344" variant="outlined">
+        <v-card
+          class="mx-auto"
+          max-width="344"
+          max-height="130"
+          variant="outlined"
+        >
           <v-card-item>
             <div>
               <div class="text-overline mb-1">
@@ -109,35 +117,16 @@ watchEffect(() => {
           </v-card-actions>
         </v-card>
       </template>
-      <v-pagination
-        v-show="totalLength > 0"
-        v-model="serverOptions.page"
-        :length="pages"
-        :total-visible="6"
-      ></v-pagination>
-      <v-btn color="blue" @click="router.push({ path: '/' })">Вернуться на главную</v-btn>
     </section>
+    <v-pagination
+      class="mb-4"
+      v-show="totalLength > 0"
+      v-model="serverOptions.page"
+      :length="pages"
+      :total-visible="4"
+    ></v-pagination>
+    <v-btn color="blue" @click="router.push({ path: '/' })"
+      >Вернуться на главную</v-btn
+    >
   </section>
 </template>
-
-<style scoped>
-.container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-}
-
-.search {
-  width: 400px;
-}
-
-.sheets {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-  width: 400px;
-}
-</style>
