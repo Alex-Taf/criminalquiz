@@ -1,7 +1,7 @@
 {
   "name": "criminalquiz",
   "private": true,
-  "version": "2.3.1",
+  "version": "2.3.2",
   "author": "Alexander Tafintsev",
   "main": "dist/electron/electron/main/main.js",
   "scripts": {

@@ -7,15 +7,16 @@ const isDev = process.env.npm_lifecycle_event === "app:dev" ? true : false;
 
 function createWindow() {
   // Create the browser window.
-  // const splashWindow = new BrowserWindow({
-  //   width: 800,
-  //   height: 600,
-  //   show: false
-  // })
+  const splashWindow = new BrowserWindow({
+    width: 800,
+    height: 600,
+    show: true
+  })
 
   const mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
+    show: false,
     webPreferences: {
       nodeIntegration: true,
       preload: join(__dirname, "../preload/preload.js")
@@ -23,25 +24,23 @@ function createWindow() {
   });
 
   // and load the index.html of the app.
-  // if (isDev) {
-  //   splashWindow.loadURL("http://localhost:3000/loading/splash/index.html")
-  //   mainWindow.loadURL("http://localhost:3000");
-  //   mainWindow.webContents.once('dom-ready', () => {
-  //     splashWindow.hide()
-  //     mainWindow.show()
-  //     // Open the DevTools.
-  //     mainWindow.webContents.openDevTools();
-  //   })
-  // } else {
-    //splashWindow.loadFile(join(__dirname, "../../../loading/splash/index.html"))
+  if (isDev) {
+    splashWindow.loadURL("http://localhost:3000/loading/splash/index.html")
+    mainWindow.loadURL("http://localhost:3000");
+    mainWindow.webContents.once('dom-ready', () => {
+      splashWindow.hide()
+      mainWindow.show()
+      // Open the DevTools.
+      mainWindow.webContents.openDevTools();
+    })
+  } else {
+    splashWindow.loadFile(join(__dirname, "../../../loading/splash/index.html"))
     mainWindow.loadFile(join(__dirname, "../../../index.html"));
-    mainWindow.webContents.openDevTools()
-    // mainWindow.webContents.once('dom-ready', () => {
-    //   splashWindow.hide()
-    //   mainWindow.show()
-    //   mainWindow.webContents.openDevTools();
-    // })
-  //}
+    mainWindow.webContents.once('dom-ready', () => {
+      splashWindow.hide()
+      mainWindow.show()
+    })
+  }
 }
 
 // This method will be called when Electron has finished
