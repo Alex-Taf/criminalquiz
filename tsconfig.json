@@ -8,13 +8,13 @@
     "jsx": "preserve",
     "sourceMap": true,
     "resolveJsonModule": true,
-    "isolatedModules": false,
+    "isolatedModules": true,
     "esModuleInterop": true,
     "lib": ["esnext", "dom"],
     "skipLibCheck": true,
     "outDir": "dist/electron",
   },
-  "include": ["src/electron/**/*"],
+  "include": ["src/electron/**/*", "public/loading", "public/resources"],
   "references": [{
     "path": "./tsconfig.node.json"
   }]

@@ -110,7 +110,7 @@ watchEffect(() => {
             <v-btn
               color="teal-accent-4"
               variant="outlined"
-              @click="chooseTest(test.idx)"
+              @click="chooseTest(test.idx - 1)"
             >
               Выбрать {{ mode === "quiz" ? "тест" : "тренажёр" }}
             </v-btn>

@@ -1,20 +1,21 @@
 import { join } from "path";
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, ipcMain } from "electron";
+// import * as remoteMain from '@electron/remote/main';
+// remoteMain.initialize();
 
 const isDev = process.env.npm_lifecycle_event === "app:dev" ? true : false;
 
 function createWindow() {
   // Create the browser window.
-  const splashWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
-    show: true
-  }) 
+  // const splashWindow = new BrowserWindow({
+  //   width: 800,
+  //   height: 600,
+  //   show: false
+  // })
 
   const mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
-    show: false,
     webPreferences: {
       nodeIntegration: true,
       preload: join(__dirname, "../preload/preload.js")
@@ -22,26 +23,26 @@ function createWindow() {
   });
 
   // and load the index.html of the app.
-  if (isDev) {
-    splashWindow.loadURL("http://localhost:3000/src/electron/loading/splash/index.html")
-    mainWindow.loadURL("http://localhost:3000");
-    mainWindow.webContents.once('dom-ready', () => {
-      mainWindow.show()
-      splashWindow.hide()
-      // Open the DevTools.
-      mainWindow.webContents.openDevTools();
-    })
-  } else {
-    splashWindow.loadURL(join(__dirname, "../loading/splash/index.html"))
+  // if (isDev) {
+  //   splashWindow.loadURL("http://localhost:3000/loading/splash/index.html")
+  //   mainWindow.loadURL("http://localhost:3000");
+  //   mainWindow.webContents.once('dom-ready', () => {
+  //     splashWindow.hide()
+  //     mainWindow.show()
+  //     // Open the DevTools.
+  //     mainWindow.webContents.openDevTools();
+  //   })
+  // } else {
+    //splashWindow.loadFile(join(__dirname, "../../../loading/splash/index.html"))
     mainWindow.loadFile(join(__dirname, "../../../index.html"));
-    mainWindow.webContents.once('dom-ready', () => {
-      mainWindow.show()
-      splashWindow.hide()
-    })
-  }
+    mainWindow.webContents.openDevTools()
+    // mainWindow.webContents.once('dom-ready', () => {
+    //   splashWindow.hide()
+    //   mainWindow.show()
+    //   mainWindow.webContents.openDevTools();
+    // })
+  //}
 }
-
-//app.enableSandbox();
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -61,5 +62,23 @@ app.whenReady().then(() => {
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
     app.quit();
+  }
+});
+
+// Menu setting
+// Menu.setApplicationMenu(Menu.buildFromTemplate([
+//   {
+//     label: 'Программа',
+//     submenu: [
+//       { label: 'Выход', role: 'quit' }
+//     ]
+//   }
+// ]))
+
+ipcMain.handle("potd", async (event, mess) => {
+  try {
+    return `Server is running on port ${4000}.`;
+  } catch (error) {
+    return error;
   }
 });

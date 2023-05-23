@@ -144,7 +144,7 @@ export const useStore = defineStore({
             this.appMode = mode
         },
         chooseTest(testNum: number) {
-            this.currentTest = this.allTests[testNum].row || this.allTests[testNum]
+            this.currentTest = this.allTests[testNum].row || this.allTests[testNum] 
             this.sheetsTotal = this.currentTest.sheets_total
             this.dataset = JSON.parse(this.currentTest.dataset)
             router.push({ path: '/choose' })
@@ -168,7 +168,17 @@ export const useStore = defineStore({
             lp.update("testsPipeline", data)
         },
         async loadTestsPipeline() {
-            this.testsPipeline = await lp.load("testsPipeline")
+            const tests = await lp.load("testsPipeline")
+            const occurences = await $models.test.entries(tests.map(test => test.testId))
+
+            this.testsPipeline = tests.filter(test => occurences.some(occ => occ.id === test.testId))
+            const notEntry = tests.filter(test => !occurences.some(occ => occ.id === test.testId))
+            
+            if (notEntry.length > 0) {
+                notEntry.forEach(item => {
+                    lp.delete("testsPipeline", item.testId)
+                })
+            }
         },
         loadTestFromPipeline(id: number) {
             $models
@@ -177,13 +187,10 @@ export const useStore = defineStore({
             .then(result => {
                 const currentTest = this.testsPipeline.find((test) => test.testId === id)
 
-
                 this.appMode = currentTest.mode
                 this.currentTest = result
                 this.sheetsTotal = result.sheets_total
                 this.dataset = JSON.parse(result.dataset)
-
-                console.log(this.dataset)
 
                 const newCurr = this.dataset[0].item.map((q) => {
                     const variants = Object.fromEntries(
@@ -250,7 +257,7 @@ export const useStore = defineStore({
                     }
                 })
         },
-        async loadAllTests(so: ServerOptions, like?: { field: string, value: string }) {            
+        async loadAllTests(so: ServerOptions, like?: { field: string, value: string }) {
             $models
                 .test
                 .loadWithOptions(
@@ -279,6 +286,7 @@ export const useStore = defineStore({
                 })
         },
         async purgeTest(id: number) {
+            console.log(id)
             await $models.test.delete(id)
         },
         doneQuiz(

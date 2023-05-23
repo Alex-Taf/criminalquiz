@@ -77,23 +77,27 @@
     })
 
     watchEffect(() => {
-        console.log(activeNum.value)
+        console.log(sheetActive)
     })
 </script>
 
 <template>
-    <section class="trainer col">
-        <h1 v-if="!isDone">{{ findQuestionLabel() }}</h1>
+    <section class="tw-flex tw-flex-col tw-max-h-[700px] tw-w-[700px]">
+        <span v-if="!isDone" class="tw-self-start tw-text-xl tw-text-left tw-mb-10">{{ findQuestionLabel() }}</span>
         <template v-if="!isDone">
-            <div class="answers">
-                <section>
-                    <template v-for="variant in getActiveVariants()" :key="variant">
-                        <v-btn v-if="!isDone" class="btn" @click="changeActiveQuestion(variant)">
-                            {{ sheetActive.find(question => question.num === variant).question }}
-                        </v-btn>
-                    </template>
-                </section>
-            </div>
+            <section class="tw-grid tw-grid-rows-2 tw-grid-cols-2 tw-gap-4">
+                <template v-for="(variant, index) in getActiveVariants()">
+                    <v-card
+                        v-if="!isDone"
+                        color="blue"
+                        class="!tw-p-3 tw-font-semibold"
+                        :class="{ 'tw-col-span-2': index === getActiveVariants().length - 1 }"
+                        @click="changeActiveQuestion(variant)"
+                    >
+                        {{ sheetActive.find(question => question.num === variant).question }}
+                    </v-card>
+                </template>
+            </section>
         </template>
         <template v-if="isDone">
             <section class="report-area">
@@ -109,7 +113,7 @@
     </section>
 </template>
 
-<style scoped>
+<!-- <style scoped>
     .trainer {
         display: flex;
         flex-direction: column;
@@ -145,4 +149,4 @@
         display: flex;
         flex-direction: column;
     }
-</style>
+</style> -->

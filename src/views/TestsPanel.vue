@@ -120,11 +120,11 @@
           <span style="font-size: 16px">{{ row.testname }}</span>
         </template>
 
-        <template #item-operation="{ idx }">
+        <template #item-operation="{ row }">
             <div class="operation-wrapper">
                 <v-icon
                     icon="mdi-delete-off"
-                    @click="removeTest(idx)"
+                    @click="removeTest(row.id)"
                 ></v-icon>
             </div>
         </template>

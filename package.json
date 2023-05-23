@@ -1,7 +1,7 @@
 {
   "name": "criminalquiz",
   "private": true,
-  "version": "2.2.0",
+  "version": "2.3.1",
   "author": "Alexander Tafintsev",
   "main": "dist/electron/electron/main/main.js",
   "scripts": {
@@ -20,22 +20,21 @@
     "appId": "YourAppID",
     "asar": true,
     "directories": {
-      "buildResources": [
-        "assets",
-        "loading"
-      ],
+      "buildResources": "assets",
       "output": "release/${version}"
     },
     "files": [
       "dist"
     ],
     "mac": {
+      "icon": "resources/icon.ico",
       "artifactName": "${productName}_${version}.${ext}",
       "target": [
         "dmg"
       ]
     },
     "win": {
+      "icon": "resources/icon.ico",
       "target": [
         {
           "target": "nsis",
@@ -54,6 +53,7 @@
     }
   },
   "dependencies": {
+    "@electron/remote": "^2.0.9",
     "@kyvg/vue3-notification": "^2.9.0",
     "axios": "^1.3.4",
     "bcrypt": "^5.1.0",

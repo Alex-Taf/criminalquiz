@@ -47,7 +47,7 @@
             </div>
         </template>
         <v-card min-height="100px">
-            <v-card-text v-if="!props.pipeline">
+            <v-card-text v-if="props.pipeline.length === 0">
                 <div class="mx-auto text-center">
                     <h3>Нет текущих тестов</h3>
                 </div>

@@ -14,6 +14,10 @@ class Test {
             return db(this._table).insert(options).then()
     }
 
+    public async entries(ids: number[]) {
+        return db(this._table).select('id').whereIn('id', ids).then(row => row)
+    }
+
     public async loadById(id: number) {
         return db(this._table).select('*').where('id', id).then(row => row[0])
     }
@@ -33,13 +37,33 @@ class Test {
                 appMode?: string
             }
         ) {
-            if (!options.like || !options.appMode) {
+            if (!options.like && !options.appMode) {
                 return db
                         .select('*')
                         .from(this._table)
                         .paginate({ perPage: options.so.rowsPerPage, currentPage: options.so.page })
                         .then(rows => rows)
-            } else {
+            }
+            
+            if (!options.like && options.appMode) {
+                return db
+                        .select('*')
+                        .from(this._table)
+                        .whereRaw(`type = "${options.appMode ? options.appMode : ''}"`)
+                        .paginate({ perPage: options.so.rowsPerPage, currentPage: options.so.page })
+                        .then(rows => rows)
+            }
+
+            if (options.like && !options.appMode) {
+                return db
+                        .select('*')
+                        .from(this._table)
+                        .whereLike(options.like.field, `%${options.like.value}%`)
+                        .paginate({ perPage: options.so.rowsPerPage, currentPage: options.so.page })
+                        .then(rows => rows)
+            }
+            
+            if (options.like && options.appMode) {
                 return db
                         .select('*')
                         .from(this._table)

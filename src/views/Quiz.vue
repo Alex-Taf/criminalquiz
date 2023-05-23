@@ -27,9 +27,7 @@
     const isQuizDone = ref(false)
 
     const getQuestions = () => {
-        console.log(sheetActive.value)
         questions.value = sheetActive.value.filter((question) => {
-            console.log(question)
             return question.variants.length > 1
         })
     }
@@ -205,22 +203,24 @@
 
 <template>
     <div class="quiz-done-line"></div>
-    <section class="quiz col">
-        <h1 v-if="!isQuizDone">{{ currentQuestion.value?.question }}</h1>
-        <div class="answers" v-if="!isQuizDone">
-            <template v-for="answer in currentQuestionAnswers" :key="answer.num">
-                <v-checkbox
-                    v-model="selection"
-                    :label="answer.question"
-                    :value="answer.num"
-                    :disabled="isDisabled(answer.num)"
-                    class="answer-check"
-                ></v-checkbox>
-            </template>
-            <v-btn v-if="!isFinalQuestion()" class="btn" @click="handleAnswer()">
+    <section class="tw-flex tw-flex-col tw-max-h-[700px] tw-w-[700px]">
+        <span class="tw-self-start tw-text-xl tw-text-left tw-mb-10 tw-ml-3" v-if="!isQuizDone">{{ currentQuestion.value?.question }}</span>
+        <div class="tw-w-[800px] tw-text-left" v-if="!isQuizDone">
+            <section class="tw-flex tw-flex-col tw-flex-start tw-mb-3">
+                <template v-for="answer in currentQuestionAnswers" :key="answer.num">
+                    <v-checkbox
+                        v-model="selection"
+                        :label="answer.question"
+                        :value="answer.num"
+                        :disabled="isDisabled(answer.num)"
+                        class="answer-check"
+                    ></v-checkbox>
+                </template>
+            </section>
+            <v-btn v-if="!isFinalQuestion()" size="large" color="green" class="tw-ml-3" @click="handleAnswer()">
                 Далее
             </v-btn>
-            <v-btn v-else @click="doneQuiz">
+            <v-btn v-else size="large" color="blue" class="tw-ml-3" @click="doneQuiz">
                 Завершить
             </v-btn>
         </div>
@@ -253,54 +253,5 @@
         height: 20px;
         background-color: skyblue;
         transition: cubic-bezier(0.075, 0.82, 0.165, 1) .5s;
-    }
-
-    .quiz {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        width: 100%;
-    }
-
-    h1 {
-        margin-bottom: 3rem;
-        width: 500px;
-    }
-
-    .answers {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .answers section {
-        width: 600px;
-    }
-
-    .btn {
-        display: flex;
-        width: 100%;
-        margin-bottom: 1rem;
-        margin-top: 1rem;
-        align-self: center;
-    }
-
-    .report-area {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .report-area-result {
-        font-size: 36px;
-        font-weight: 600;
-        margin-bottom: 20px;
-    }
-
-    .report-area-estim {
-        font-size: 86px;
-        font-weight: 700;
-        margin-bottom: 20px;
     }
 </style>

@@ -15,6 +15,7 @@ export interface IModels {
           type: string, // ENUM types string value = app mode
           sheets_total: number
         }) => Promise<IDbRowGeneric>,
+        entries: (ids: number[]) => Promise<Array<{id: number}>>,
         loadById: (id: number) => Promise<IDbRowGeneric>,
         loadWithOptions: (
           options: {

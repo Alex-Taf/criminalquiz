@@ -1,6 +1,6 @@
 import { contextBridge } from "electron"
+contextBridge.exposeInMainWorld("require", require)
 import dotenv from 'dotenv'
-
 /** */
  /* Import singletone models */
 /** */
@@ -90,6 +90,7 @@ contextBridge.exposeInMainWorld('models', {
     }) => {
       return test.create(options)
     },
+    entries: (ids: number[]) => test.entries(ids),
     loadById: (id: number) => test.loadById(id),
     loadWithOptions: (
       options: {
