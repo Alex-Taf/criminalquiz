@@ -74,10 +74,3 @@ app.on("window-all-closed", () => {
 //   }
 // ]))
 
-ipcMain.handle("potd", async (event, mess) => {
-  try {
-    return `Server is running on port ${4000}.`;
-  } catch (error) {
-    return error;
-  }
-});

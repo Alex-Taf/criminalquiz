@@ -1,7 +1,7 @@
 {
   "name": "criminalquiz",
   "private": true,
-  "version": "2.3.2",
+  "version": "2.3.3",
   "author": "Alexander Tafintsev",
   "main": "dist/electron/electron/main/main.js",
   "scripts": {
@@ -26,6 +26,7 @@
     "files": [
       "dist"
     ],
+    "extraResources": ["resources/cq.db"],
     "mac": {
       "icon": "resources/icon.ico",
       "artifactName": "${productName}_${version}.${ext}",
